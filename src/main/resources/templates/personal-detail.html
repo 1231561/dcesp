@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.min.css">
+    <script src="../static/js/jquery-3.6.0.js"></script>
+    <script src="../static/js/bootstrap.js"></script>
+    <title>个人中心</title>
+</head>
+<body>
+    <!--布局容器,我们的内容都是写在这个div里面的.-->
+    <!--固定宽度 : class="container",就是边边上会有留白-->
+    <div class="container">
+    <!--固定容器,这个玩意用的最多.-->
+        <!--栅格网格系统.它能够根据屏幕或者视口尺寸的增加,系统能自动分为最多12列.如果内容超过12列,就会自动换行.-->
+        <!--网格系统包括容器,行和列.
+            数据行(row)必须放在容器里面(container),只有列(column)才可以作为行容器的直接子元素,但是列数之和不能超过平分的总列数.比如12.
+            这个列它包含以下子属性 : xs,sm,md,lg,分别对应超小屏,小屏,中屏,大屏.我们用这个md用的最多,比如这样:
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8">
+                        表示占一行的8列
+                    </div>
+                    <div class="col-md-4">
+                        表示占一行的4列
+                    </div>
+                    <div class="col-md-8 col-lg-8">
+                        这样的话就可以根据屏幕实际情况,在中屏和大屏的时候这个div都占8列.
+                    </div>
+                </div>
+            </div>
+
+            列偏移 : 如果我们不想相邻的两个列紧靠在一起.可以以使用列偏移来实现.我们只需要这样写类名 : class="col-md-数字 col-md-offset-数字"即可实现.
+            它表示这个列会相较于之前那个列距离指定的列数.如果总列数+偏移量大于12也会导致换行.
+            列排序 : 列排序就算改变列的方向.也就是改变左右浮动,并且设置浮动的距离.我们可以这样写类名 : class="col-md-数字 col-md-push/pull-数字"
+            push表示往右边浮动.如果右边存在列,那现在的列就会把前面的列覆盖了.左边同理
+            列嵌套 : 一个列里面也以放行,里面的行跟外面的一样也是放列的.
+        -->
+        <!--常用样式:
+            1.排版
+                * 标题 :
+                    我们可以通过class名指定为h1实现跟<h1>标签同样的效果,还可以通过在非标题标签的class="h1"标签里面的子标签的class="small"来实现副标题的效果
+                * 段落 :
+                    段落原本我们用的是<p>,bootstrap对这个标签加了一些处理.可以通过类名指定为"lead"来突出强调内容,也就是加大字体并加粗.并且可以通过在里面嵌套
+                    <small>标签来表示小号字,<b>,<strong>标签来处理加粗字体.还可以用<i>,<em>标签来表示斜体字.
+                * 强调 :
+                    bootstrap提供了一些类名,用来表示强调:
+                    1.text-muted : 提示,浅灰色的
+                    2.text-primary : 表示主要的,它是蓝色的
+                    3.text-success : 表示成功,它是绿色的
+                    4.text-info : 表示通知,它是浅蓝色的
+                    5.text-warning : 表示警告,它是黄色的.
+                    6.text-danger : 表示危险,它是褐色的
+                * 对齐效果 :
+                    bootstrap提供了一些类名来实现文本的对齐风格的设置.
+                       text-left : 左对齐
+                       text-right : 右对齐
+                       text-center : 居中对齐
+                       text-justify : 两端对齐
+                * 列表 :
+                    boostrap提供了一些类名来实现一些列表效果,一般是ul标签的class名.
+                        list-unstyled : 表示去点列表
+                        list-inline : 表示内联列表,就是把垂直列表换成水平列表,并i且去掉编号显示.
+                        在普通的html标签里,我们一般用dl,dt,dd来进行自定义列表,这种自定义列表长得就是一个标题一个内容这样显示的,dt就是标题,dd就是内容
+                        对于dl,我们可以使用类名dl-horizontal来制作水平定义列表
+                * 代码 :
+                    就是代码块嘛.我们可以用<code>标签来显示单行代码块,<pre>来显示多行代码块,<kbd>来显示用户输入代码.
+                    对于pre标签来说,可以指定class为pre-scrollable来加滚动条,在内容超过高度时,就会出现滚动条
+                * 表格 :
+                    bootstrap提供了一些表格类名样式,是加到table标签上的类名.
+                    这么用 : <table class="table table-striped table-border">
+                            </table>
+                            先给table是因为boostrap对原来的表格进行了一些美化,好看一些.
+                    表格样式类名 : 这些类名是可以连着写的.想要多少效果写多少个.
+                        table-striped : 斑马线表格,就是隔行换色.
+                        table-bordered : 带边框的表格
+                        table-hover : 鼠标悬停高亮的表格
+                        table-condensed : 紧凑型表格,单元格内没有间距或者内距相比于其他表格小的.\
+                    对于tr,th和td标签,也有一些对应的样式类名
+                        active : 将悬停的颜色应用在行或者单元格上
+                        success : 表示成功的操作
+                        info : 表示信息变化的操作
+                        warning : 表示一个警告的操作
+                        danger : 表示一个危险的操作
+            2.表单
+                * 表单控件
+                表单控件的一些通用类名样式 : form-control,input-lg,input-sm,后面那两个就是去指定表单控件的大小的.
+                    * 文本输入框
+                        当使用form-control后,输入框会占据一整行,此时就可以使用行列来操作了.把input写在<div class="col-md-数字">里面就ok了.其他表单控件也是一样的
+                    * 下拉选择框
+                        可以通过multiple设置为multiple来设置下拉框多选
+                    * 文本域
+                    * 复选框
+                        可以通过类名样式 : checkbox来设置复选框垂直显示,checkbox-inline来设置复选框水平显示
+                    * 单选框
+                        可以通过类名样式 : radio来设置单选框垂直显示,radio-inline来设置单选框水平显示
+                    * 按钮
+                        按钮在表单里都是<input>的type指定为button或者直接用<button>标签.
+                        Bootstrap也给button做了对应的样式,也就是类名样式btn.<button class="btn">就可以见到bootstarp样式的按钮了.
+                        附加的样式 :
+                            btn-primary
+                            btn-danger
+                            btn-info
+                            btn-success
+                            btn-default
+                            btn-warning
+                            btn-link
+                        这些都是加在类名样式btn后的附加属性.
+                        除了<button>标签外,对于a标签,div标签等其他非按钮标签,也可以用类名样式btn来把它们变成按钮
+                        按钮大小样式 : btn-lg(大按钮),btn-sm(正常按钮),btn-xs(小按钮)这些.
+                * 表单布局
+                    先向<form>标签中添加属性role="form",然后把标签和空间放在一个带有class="form-group"的标签(一般是div)中,这是获取最佳间距所必须的.
+                    然后想所有文本元素<input>,<textarea>等表单控件添加类名样式 : class="form-control"
+                    表单布局有水平表单和内联表单.
+                    水平表单:即类名样式form-horizontal.
+                        <form class="form-horizontal" role="form">这里是表单声明,指定它是bootstrap样式的表单,并且使用水平布局
+                            <div class="form-group">表单控件都放在这个div里面,表名表单控件被bootstarap控制.
+                                里面的东西还可以使用bootstrap的网格系统.
+                                <div class="col-md-8">使用网格系统
+                                    账号: <input class="form-control" name="account" type="text" placeholder="请输入账号"/>这个input被boostrap控制.
+                                </div>
+                            </div>
+
+                            <div class="form-group">表单控件都放在这个div里面,表名表单控件被bootstarap控制.
+                                里面的东西还可以使用bootstrap的网格系统.
+                                <div class="col-md-8">使用网格系统
+                                    账号: <input class="form-control" name="account" type="text" placeholder="请输入账号"/>这个input被boostrap控制.
+                                </div>
+                            </div>
+                        </form>
+                        一般一个表单控件都有一个form-group来包着.
+                        内联表单是把东西都放在一行去显示,所以我们很少用
+            3.缩略图
+                基本都是配合栅格网格系统使用:
+                <div class="container">容器
+                    <div class="row">行
+                        <div class=""col-md-3">这个缩略图占3列
+                            <img src="图片路径">
+                            <h3>标题</h3>
+                            <p>描述</p>
+                            <button class="btn btn-info"><span class="bootstrap提供的一些图标类名样式"></span>like</button>
+                            <button class="btn btn-info">say</button>
+                        </div>
+                    </div>
+
+                </div>
+            4.面板
+                面板我们用<panel>标签来实现,一般我们至少设置边框(border)和內边距(padding).
+                bootstrap提供的一些面板样式:
+                    panel-default : 默认样式
+                    panel-heading : 面板头
+                    panel-body : 面板主题内容
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        面板头
+                    </div>
+                    <div class="panel-body>
+                        面板主题内容
+                    </>
+                </div>
+
+
+            5.Bootstrap插件
+                * 导航
+                * 分页导航
+                * 下拉菜单
+                * 模态框
+        -->
+    </div>
+<!--    <div class="container-fluid">-->
+<!--        这种就是边边上不留白的-->
+<!--        完整容器,而且跟固定容器最好别一起用-->
+<!--    </div>-->
+</body>
+</html>

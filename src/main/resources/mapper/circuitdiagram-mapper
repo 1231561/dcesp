@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org.dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qin.dcesp.dao.CircuitdiagramMapper">
+
+    <select id="selectAllCdmById" resultType="Circuitdiagram">
+        select cdmid,userid,cdmname,graphdataids
+        from circuitdiagram
+        where userid = #{userId}
+    </select>
+
+    <select id="selectCdmById" resultType="Circuitdiagram">
+        select cmdid,userid,cdmname,graphdataids
+        from circuitdiagram
+        where cdmid = #{cdmId}
+    </select>
+
+    <select id="selectGraphIdsById">
+        select graphdataids from circuitdiagram
+        where cdmid = #{cdmId}
+    </select>
+
+    <insert id="saveCdm">
+        insert into circuitdiagram(userid,cdmname,graphdataids)
+        values(#{userId},#{cdmName},#{graphdataIds})
+    </insert>
+
+    <update id="updateCdmById">
+
+    </update>
+
+    <delete id="deleteCdmById">
+        delete from circuitdiagram
+        where cdmid = #{cdmId}
+    </delete>
+</mapper>

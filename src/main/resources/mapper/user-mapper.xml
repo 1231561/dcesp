@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org.dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qin.dcesp.dao.UserMapper">
+    <sql id="insertFields">
+        username,password,salt,type,create_time,email
+    </sql>
+    <sql id="selectFields">
+        id,username,password,salt,type,create_time,email
+    </sql>
+    <select id="searchUserById" resultType="User">
+        select <include refid="selectFields"></include>
+        from user
+        where id = #{id}
+    </select>
+
+    <select id="searchUserByName" resultType="User">
+        select <include refid="selectFields"></include>
+        from user
+        where username = #{username}
+    </select>
+
+    <insert id="insertUser" parameterType="User" keyProperty="id">
+        insert into user(<include refid="insertFields"></include>)
+        values(#{username},#{password},#{salt},#{type},#{createTime},#{email})
+    </insert>
+    
+    <update id="updatePassword">
+        update user set password = #{password} where id = #{id}
+    </update>
+</mapper>

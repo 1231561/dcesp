@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org.dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qin.dcesp.dao.GraphDataMapper">
+    <select id="queryGraphDataByCdm" resultType="GraphData">
+        select cdmid,graphid,'from',fromport,'to',toport
+        from graphdata
+        where cdmid = #{cdmId}
+    </select>
+
+    <select id="queryGraphDataById" resultType="GraphData">
+        select cdmid,graphid,'from',fromport,'to',toport
+        from graphdata
+        where graphid = #{graphId}
+    </select>
+
+    <insert id="saveOneGraphData">
+        insert into graphdata(cdmId,'from',fromport,'to','toport')
+        values(#{cdmId},#{from},#{fromPort},#{to},#{toPort})
+    </insert>
+
+    <insert id="saveGraphDataByCdm">
+
+    </insert>
+
+    <update id="updateGraphDataById">
+        update graphdata set 'from' = #{from},fromport = #{fromPort},'to' = #{to},toport = #{toPort}
+        where graphid = #{graphId}
+    </update>
+
+    <update id="updateGraphDataByCdm">
+
+    </update>
+
+    <delete id="deleteGraphDataById">
+        delete from graphdata where graphid = #{graphId}
+    </delete>
+
+    <delete id="deleteGraphDataByCdm">
+        delete from graphdata where cdmid = #{cdmId}
+    </delete>
+</mapper>

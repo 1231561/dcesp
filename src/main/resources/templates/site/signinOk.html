@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}">
+    <script th:src="@{/js/jquery-3.6.0.js}"></script>
+    <script th:src="@{/js/bootstrap.js}"></script>
+    <title>注册成功!</title>
+</head>
+<body>
+<div class="main">
+    <div class="container mt-5">
+        <div class="jumbotron">
+            <p class="lead" th:text="${msg}">账号注册成功!可以正常使用了!</p>
+            <hr class="my-4">
+            <p>
+                系统会在 <span id="seconds" class="text-danger">8</span> 秒后自动跳转,
+                您也可以点此 <a id="target" th:href="@{${target}}" class="text-primary">链接</a>, 手动跳转!
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    $(function(){
+        setInterval(function(){
+            var seconds = $("#seconds").text();
+            $("#seconds").text(--seconds);
+            if(seconds == 0) {
+                location.href = $("#target").attr("href");
+            }
+        }, 1000);
+    });
+</script>
+</html>

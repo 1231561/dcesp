@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.css}">
+    <script th:src="@{/js/jquery-3.6.0.js}"></script>
+    <script th:src="@{/js/bootstrap.js}"></script>
+    <title>数字电路实验室-首页</title>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <hr>
+    </div>
+    <div class="row" id="header">
+        <div class="col-md-2">
+
+        </div>
+
+        <div class="col-md-4">
+            <ul class="list-inline">
+                <li class="list-inline-item">
+                    <a th:href="@{/index}">
+                        首页
+                    </a>
+                </li>
+                <li class="list-inline-item">
+                    <a th:href="@{/workingSpace}">
+                        实验室
+                    </a>
+                </li>
+                <li class="list-inline-item">
+                    <a th:href="@{|/personalCenter/${loginUser?.id}|}">
+                        个人中心
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-4">
+            <span>
+                <a th:href="@{|/personalCenter/${loginUser?.id}|}" th:utext="${username}">xx</a><span th:if="${username!=null}">同学,你好!欢迎来到数字电路实验室.</span>
+                <a th:href="@{/logout}" th:if="${username!=null}">登出</a>
+                <a th:href="@{/login}" th:if="${username==null}">请先登录!</a>
+                <a th:href="@{/register}" th:if="${username==null}">没有账号?先注册一个!</a>
+                <a th:href="@{/data}" th:if="${loginUser!=null&&loginUser.type==1}">进入网站信息页面</a>
+            </span>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
