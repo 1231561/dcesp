@@ -16,8 +16,6 @@ import java.util.TimerTask;
 /**
  * 与ESP8266进行通讯的主要类
  * */
-@Component
-@Scope(value = "singleton")
 public class Esp8266Service {
 
     private static final Logger logger = LoggerFactory.getLogger(Esp8266Service.class);
@@ -26,12 +24,19 @@ public class Esp8266Service {
 
     private Socket socket;
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public void setSocket(Socket socket) {
         this.socket = socket;
     }
-    //检测ESP8266状态
+    //获取当前连接的ESP8266状态
     public String getEsp8266Status(){
-
         return status;
     }
 

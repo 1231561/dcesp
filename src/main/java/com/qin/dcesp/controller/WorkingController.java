@@ -10,6 +10,7 @@ import com.qin.dcesp.entity.User;
 import com.qin.dcesp.entity.messageclass.GraphDataFromFront;
 import com.qin.dcesp.entity.messageclass.NodeDataFromFront;
 import com.qin.dcesp.service.CircuitdiagramService;
+import com.qin.dcesp.service.SocketService;
 import com.qin.dcesp.utils.HostHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,9 @@ public class WorkingController {
 
     @Autowired
     CircuitdiagramService workingService;
+
+    @Autowired
+    SocketService socketService;
 
     @PostMapping("/sumitCircuitdiagram")
     @ResponseBody
@@ -77,12 +81,16 @@ public class WorkingController {
         }
         //将节点数据存储
 
+        //进行路径分析,获取电源到接地端和检测端的路径
         Circuitdiagram circuitdiagram = new Circuitdiagram();
         circuitdiagram.setUserId(user.getId());
         Graph graph = new Graph(graphData);
+        //获取路径
         Map<String, List<List<String>>> roads = graph.getRoad();
         logger.info(roads.toString());
+        //解析路径上的继电器位置
 
+        //将继电器位置发给单片机,由单片机完成电路连接
         /*准备调用单片机客户端接口,调用Service,在Service中去处理接口调用*/
 
 

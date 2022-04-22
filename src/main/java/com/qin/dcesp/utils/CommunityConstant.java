@@ -37,4 +37,8 @@ public interface CommunityConstant {
     String AUTHORITY_MODERATOR = "moderator";
     //主题:分享
     String TOPIC_SHARE = "share";
+    //Esp8266状态:待机
+    String ESP8266WAITTING = "watting";
+    //Esp8266状态:忙碌
+    String ESP8266BUSY = "busy";
 }
