@@ -41,4 +41,6 @@ public interface CommunityConstant {
     String ESP8266WAITTING = "watting";
     //Esp8266状态:忙碌
     String ESP8266BUSY = "busy";
+    //完成通讯提示指令
+    String ESP8266FINISH = "callfinish";
 }

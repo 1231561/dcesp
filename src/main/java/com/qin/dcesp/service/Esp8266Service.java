@@ -40,6 +40,10 @@ public class Esp8266Service {
         return status;
     }
 
+    public Socket getSocket() {
+        return socket;
+    }
+
     //发送数据
     public boolean senData(String data){
         if(socket == null){
