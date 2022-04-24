@@ -131,12 +131,12 @@ public class WorkingController implements CommunityConstant {
                         //保持连接,进行数据收发
                         String getMsg = new String(buffer,0,index, StandardCharsets.UTF_8);
                         System.out.println("客户端的消息: " + getMsg);
-                        if(ESP8266FINISH.equals(getMsg)){
+                        if(getMsg.contains(ESP8266FINISH)){
                             logger.info("通信完成,客户端已发送结束连接请求 : " + getMsg);
                             break;
                         }
-                        logger.info("获取一次消息!");
-                        client.senData("再发一次!");
+                        logger.info("获取一次消息完成");
+                        System.out.println("请发送消息: ");
                     }
                     client.setStatus(ESP8266WAITTING);
                 }catch (IOException e){

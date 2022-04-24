@@ -52,9 +52,6 @@ public class Esp8266Service {
         }
         try{
             OutputStream outputStream = socket.getOutputStream();
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
                     try {
                         outputStream.write(data.getBytes());
                         logger.info("ESP8266Service发送数据: " + data);
@@ -62,8 +59,6 @@ public class Esp8266Service {
                     } catch (IOException e) {
                         logger.error("ESP8266发送数据失败!!! : " + e.getMessage());
                     }
-                }
-            },1000);
         } catch (IOException e) {
             logger.error("ESP8266Service获取输出流失败!:"+e.getMessage());
             return false;
