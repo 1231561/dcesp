@@ -1,5 +1,8 @@
 package com.qin.dcesp.entity.messageclass;
 
+import lombok.ToString;
+
+@ToString
 public class GraphDataFromFront {
     private int __gohashid;
     private String from;

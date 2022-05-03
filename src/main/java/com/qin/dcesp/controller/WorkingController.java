@@ -75,7 +75,7 @@ public class WorkingController implements CommunityConstant {
         resultMap.put("code","success");
         resultMap.put("msg","请求成功");
         //进行图数据封装,存入数据库
-        List<GraphData> graphData = new ArrayList<>();
+        List<GraphData> graphData = new ArrayList<>();//从前端获取的图信息
         for(GraphDataFromFront dat : graphDataFromFront){
             GraphData data = new GraphData();
             data.setFrom(dat.getFrom());
@@ -84,6 +84,7 @@ public class WorkingController implements CommunityConstant {
             data.setToPort(dat.getToPort());
             graphData.add(data);
         }
+        logger.info("前端获取的图信息: " + graphData);
         //将节点数据存储
 
         //进行路径分析,获取电源到接地端和检测端的路径
@@ -92,11 +93,109 @@ public class WorkingController implements CommunityConstant {
         Graph graph = new Graph(graphData);
         //获取路径
         Map<String, List<List<String>>> roads = graph.getRoad();
-        logger.info(roads.toString());
+        logger.info("路径 : " + roads.toString());
         //解析路径上的继电器位置
-
+        //首先找需要上电的芯片
+        List<List<String>> powerToGround = roads.get("powerToGround");//电源到接地的路径
+        List<List<String>> powerToMeasure = roads.get("powerToMeasure");//电源到检测端的路径
+        List<List<String>> afterFilterPowerToMeasureData = new ArrayList<>();//过滤后的数据
+        //过滤检测端数据,当先出现接地后出现检测端时,该数据直接忽略.
+        boolean isGround = false;
+        boolean isGroundBeforMeasur = false;
+        for(List<String> data : powerToMeasure){
+            for(String node : data){
+                if(!isGround && node.contains("电平检测")){
+                    break;
+                }
+                if(!isGround && node.contains("接地")){
+                    isGround = true;
+                }
+                if(isGround && node.contains("电平检测")){
+                    isGroundBeforMeasur = true;
+                }
+            }
+            if(!isGroundBeforMeasur){
+                afterFilterPowerToMeasureData.add(data);
+            }
+        }
+        List<String> needPower = new ArrayList<>();
+        for(List<String> road : powerToGround){
+            for(String node : road){
+                if(node.contains("74LS")){
+                    needPower.add(node);
+                }
+            }
+        }
+        List<String> needMeasur = new ArrayList<>();
+        for(List<String> road : afterFilterPowerToMeasureData){
+            for(int i = 0;i < road.size(); i++){
+                if(road.get(i).contains("电平检测")){
+                    needMeasur.add(road.get(i - 1));
+                }
+            }
+        }
         //解析完成,开始封装数据
+        //包装需要上电的芯片信息.
+        Map<String,List<GraphData>> packegData = new HashMap<>();//打包发给单片机的数据
+        for(String node : needPower){
+            for(GraphData g : powerLinkedList){
+                if(node.contains(g.getTo())){
+                    List<GraphData> list;
+                    if(!packegData.containsKey("powerToNode")){
+                        list = new ArrayList<>();
+                    }else{
+                        list = packegData.get("powerToNode");
+                    }
+                    list.add(g);
+                    packegData.put("powerToNode",list);
+                }
+            }
+        }
+        //打包需要检测电平位置的芯片信息
+        for(String node : needMeasur){
+            for(String key : checkLinkedListMap.keySet()){
+                if(key.contains(node.split(",")[0])){
+                    for(GraphData g : checkLinkedListMap.get(key)){
+                        if(node.contains(g.getFrom())){
+                            List<GraphData> list;
+                            if(!packegData.containsKey("nodeToCheck")){
+                                list = new ArrayList<>();
+                            }else{
+                                list = packegData.get("nodeToCheck");
+                            }
+                            list.add(g);
+                            packegData.put("nodeToCheck", list);
+                        }
+                    }
+                }
+            }
+        }
+        //获取需要检测电平位置的芯片的端口信息
+        List<GraphData> nodeToCheckData = packegData.get("nodeToCheck");
+        List<GraphData> filterCheckData = new ArrayList<>();
+        for(GraphData data : graphData){
+            for(GraphData checkNode : nodeToCheckData){
+                String dataForm = data.getFrom();
+                String dataFormPort = data.getFromPort();
+                String dataTo = data.getTo();
+                String dataToPort = data.getToPort();
+                String checkNodeForm = checkNode.getFrom();
+                String checkNodeFormPort = checkNode.getFromPort().split("_")[1];
+                if(dataForm.contains(checkNodeForm)){
+                    if(dataFormPort.equals(checkNodeFormPort)){
+                        filterCheckData.add(checkNode);
+                    }
+                }else if(dataTo.contains(checkNodeForm)){
+                    if(dataToPort.equals(checkNodeFormPort)){
+                        filterCheckData.add(checkNode);
+                    }
+                }
+            }
+        }
+        packegData.put("nodeToCheck",filterCheckData);
+        //打包控制端信息
 
+        logger.info("打包的数据: " + packegData.toString());
         //封装完成,准备调用单片机处理
         if(socketService.getEsp8266ServiceMap() == null || socketService.getEsp8266ServiceMap().size() == 0){
             logger.info("===========当前没有可用客户机!请联系管理员!=============");

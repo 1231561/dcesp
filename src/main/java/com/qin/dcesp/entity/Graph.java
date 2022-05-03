@@ -75,15 +75,25 @@ public class Graph {
                 dfs(adjacencyTable,  key, "接地",new HashSet<>(),new ArrayList<>(),powerToGroundRoads);
                 dfs(adjacencyTable, key, "电平检测",new HashSet<>(),new ArrayList<>(),powerToMeasure);
             }
+            if(key.contains("高电平")){
+                dfs(adjacencyTable,key,"接地",new HashSet<>(),new ArrayList<>(),highPowerTo);
+            }
+            if(key.contains("低电平")){
+                dfs(adjacencyTable,key,"接地",new HashSet<>(),new ArrayList<>(),lowerPowerTo);
+            }
         }
         Map<String, List<List<String>>> result = new HashMap<>();
         result.put("powerToGround", powerToGroundRoads);
         result.put("powerToMeasure", powerToMeasure);
+        result.put("highPowerTo",highPowerTo);
+        result.put("lowerPowerTo",lowerPowerTo);
         return result;
     }
 
     private List<List<String>> powerToGroundRoads = new ArrayList<>();
     private List<List<String>> powerToMeasure = new ArrayList<>();
+    private List<List<String>> highPowerTo = new ArrayList<>();
+    private List<List<String>> lowerPowerTo = new ArrayList<>();
 
     private void dfs(Map<String,List<String>> adjTable,String nowNode,
                      String end,Set<String> visited,

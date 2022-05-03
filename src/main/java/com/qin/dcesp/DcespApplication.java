@@ -22,9 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SpringBootApplication
 @EnableTransactionManagement
@@ -47,6 +45,8 @@ public class DcespApplication implements ApplicationRunner , CommunityConstant {
             while ((c = inputStreamReader.read()) != -1) {
                 jsonString.append((char) c);
             }
+            inputStreamReader.close();
+            inputStream.close();
         }catch (FileNotFoundException e){
             logger.error("找不到该文件!" + e.getMessage());
         } catch (IOException e) {

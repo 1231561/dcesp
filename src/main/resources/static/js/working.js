@@ -798,6 +798,8 @@ for(let i = 0;i < lis.length;i++){
             case '接地': nowNodeCategory = 'ground';break;
             case '电源':
             case '电平检测':
+            case '高电平':
+            case '低电平':
             case '示波器': nowNodeCategory = 'powerAnddp';break;
             case '电阻':
             case '电容': nowNodeCategory = 'dzAnddr';break;
