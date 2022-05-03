@@ -95,7 +95,9 @@ public class WorkingController implements CommunityConstant {
         logger.info(roads.toString());
         //解析路径上的继电器位置
 
+        //解析完成,开始封装数据
 
+        //封装完成,准备调用单片机处理
         if(socketService.getEsp8266ServiceMap() == null || socketService.getEsp8266ServiceMap().size() == 0){
             logger.info("===========当前没有可用客户机!请联系管理员!=============");
             resultMap.put("code","error");

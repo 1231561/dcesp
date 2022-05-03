@@ -1,6 +1,5 @@
 package com.qin.dcesp.entity;
 
-import com.qin.dcesp.entity.messageclass.NodeDataFromFront;
 import java.util.*;
 
 /**
@@ -86,7 +85,9 @@ public class Graph {
     private List<List<String>> powerToGroundRoads = new ArrayList<>();
     private List<List<String>> powerToMeasure = new ArrayList<>();
 
-    private void dfs(Map<String,List<String>> adjTable,String nowNode,String end,Set<String> visited,List<String> nowRoad,List<List<String>> res){
+    private void dfs(Map<String,List<String>> adjTable,String nowNode,
+                     String end,Set<String> visited,
+                     List<String> nowRoad,List<List<String>> res){
         if(visited.contains(nowNode)){
             return;
         }

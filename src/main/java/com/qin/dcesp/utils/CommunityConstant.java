@@ -1,5 +1,12 @@
 package com.qin.dcesp.utils;
 
+import com.qin.dcesp.entity.GraphData;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public interface CommunityConstant {
 
     //激活成功状态
@@ -43,4 +50,10 @@ public interface CommunityConstant {
     String ESP8266BUSY = "busy";
     //完成通讯提示指令
     String ESP8266FINISH = "callfinish";
+    //实验电路的powerLinked部分
+    List<GraphData> powerLinkedList = new ArrayList<>();
+    //实验电路的checkLinkedMap部分
+    Map<String,List<GraphData>> checkLinkedListMap = new HashMap<>();
+    //实验电路的controlLinkedMap部分
+    Map<String,List<GraphData>> controlLinkedListMap = new HashMap<>();
 }

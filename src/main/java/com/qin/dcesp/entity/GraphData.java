@@ -1,10 +1,13 @@
 package com.qin.dcesp.entity;
 
 
+import lombok.ToString;
+
 /**
  * 电路图节点数据类
  *  对应表:GraphData表
  * */
+@ToString
 public class GraphData {
     /*
     * from : 连接的源节点,也就是连接是从谁那开始的
