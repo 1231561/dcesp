@@ -775,9 +775,9 @@ diagram.model =
         { linkFromPortIdProperty: "fromPort",  // required information:
             linkToPortIdProperty: "toPort",      // identifies data property names
             nodeDataArray: [
-                { key: "74LS20,0", category: "node14port"},
-                { key: "74LS138,0",category: "node16port"},
-                { key: "74LS20,2",category: "node14port"}
+                { key: "电源,0", category: "powerAnddp"},
+                { key: "高电平,0",category: "powerAnddp"},
+                { key: "低电平,0",category: "powerAnddp"}
             ],
             linkDataArray: [
                 // no predeclared links

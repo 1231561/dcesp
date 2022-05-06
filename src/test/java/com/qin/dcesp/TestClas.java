@@ -1,12 +1,101 @@
 package com.qin.dcesp;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.qin.dcesp.entity.GraphData;
+import org.springframework.core.io.ClassPathResource;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
 public class TestClas {
 
     public static void main(String[] args) {
-        System.out.println(new TestClas().binaryGap(22));
+        List<String> list = new ArrayList<>();
+        list.add("g1");
+        list.add("a2");
+        Collections.sort(list);
+        System.out.println(list);
+    }
+
+
+    public int minimumCardPickup(int[] cards) {
+        int res = Integer.MAX_VALUE;
+        Map<Integer,List<Integer>> map = new HashMap<>();
+        for(int i = 0;i < cards.length;i++){
+            if(map.containsKey(cards[i])){
+                List<Integer> list = map.get(cards[i]);
+                list.add(i);
+                map.put(cards[i],list);
+            }else{
+                List<Integer> list = new ArrayList<>();
+                list.add(i);
+                map.put(cards[i],list);
+            }
+        }
+        for(int key : map.keySet()){
+            if(map.get(key).size() >= 2){
+                res = Math.min(res,map.get(key).get(1) - map.get(key).get(0) + 1);
+            }
+        }
+        return res == Integer.MAX_VALUE ? -1 : res;
+    }
+
+
+    public String removeDigit(String number, char digit) {
+        int count = 0;
+        List<Integer> index = new ArrayList<>();
+        List<String> arr = new ArrayList<>();
+        String res = "";
+        for(int i = 0;i < number.length();i++){
+            if(number.charAt(i) == digit){
+                count++;
+                index.add(i);
+            }
+        }
+        if(count == 1){
+            return number.substring(0,index.get(0)) + number.substring(index.get(0) + 1);
+        }
+        for(int i = 0;i < count;i++){
+            int ind = index.get(i);
+            if(ind == 0){
+                arr.add(number.substring(ind + 1));
+            }else if(ind + 1 <= number.length()){
+                arr.add(number.substring(0,ind) + number.substring(ind + 1));
+            }else if(ind == number.length() - 1){
+                arr.add(number.substring(0,ind));
+            }
+        }
+        for(int i = 0;i < arr.size();i++){
+            if(i + 1 < arr.size()){
+                res = findMax(arr.get(i),res);
+            }
+        }
+        return res;
+    }
+    public String findMax(String a,String b){
+        if("".equals(a)){
+            return b;
+        }
+        if("".equals(b)){
+            return a;
+        }
+        int i = 0;
+        int j = 0;
+        while(i < a.length() && j < b.length()){
+            if(a.charAt(i) > b.charAt(j)){
+                return a;
+            }else if(a.charAt(i) < b.charAt(j)){
+                return b;
+            }else{
+                i++;
+                j++;
+            }
+        }
+        return a;
     }
 
     public int binaryGap(int n) {

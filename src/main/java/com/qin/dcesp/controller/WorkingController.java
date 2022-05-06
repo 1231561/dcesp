@@ -13,6 +13,7 @@ import com.qin.dcesp.service.CircuitdiagramService;
 import com.qin.dcesp.service.Esp8266Service;
 import com.qin.dcesp.service.SocketService;
 import com.qin.dcesp.utils.CommunityConstant;
+import com.qin.dcesp.utils.GraphDataStringPorcessUtil;
 import com.qin.dcesp.utils.HostHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +42,14 @@ public class WorkingController implements CommunityConstant {
     HostHolder hostHolder;
 
     @Autowired
-    CircuitdiagramService workingService;
+    CircuitdiagramService circuitdiagramService;
 
     @Autowired
     SocketService socketService;
 
+    /**
+     * 电路请求处理
+     * */
     @PostMapping("/sumitCircuitdiagram")
     @ResponseBody
     public String handleCiruitdiagram(
@@ -85,7 +89,7 @@ public class WorkingController implements CommunityConstant {
             graphData.add(data);
         }
         logger.info("前端获取的图信息: " + graphData);
-        //将节点数据存储
+        //将节点数据存储,存graphData,但是感觉没必要,不存了
 
         //进行路径分析,获取电源到接地端和检测端的路径
         Circuitdiagram circuitdiagram = new Circuitdiagram();
@@ -95,9 +99,12 @@ public class WorkingController implements CommunityConstant {
         Map<String, List<List<String>>> roads = graph.getRoad();
         logger.info("路径 : " + roads.toString());
         //解析路径上的继电器位置
+        //==============================================================================
         //首先找需要上电的芯片
         List<List<String>> powerToGround = roads.get("powerToGround");//电源到接地的路径
         List<List<String>> powerToMeasure = roads.get("powerToMeasure");//电源到检测端的路径
+        List<List<String>> highPowerTo = roads.get("highPowerTo");
+        List<List<String>> lowerPowerTo = roads.get("lowerPowerTo");
         List<List<String>> afterFilterPowerToMeasureData = new ArrayList<>();//过滤后的数据
         //过滤检测端数据,当先出现接地后出现检测端时,该数据直接忽略.
         boolean isGround = false;
@@ -134,7 +141,25 @@ public class WorkingController implements CommunityConstant {
                 }
             }
         }
+        List<String> needHighControl = new ArrayList<>();
+        for(List<String> road : highPowerTo){
+            for (String s : road) {
+                if (s.contains("74LS")) {
+                    needHighControl.add(s);
+                }
+            }
+        }
+        List<String> needLowerControl = new ArrayList<>();
+        for(List<String> road : lowerPowerTo){
+            for(String s : road){
+                if(s.contains("74LS")){
+                    needLowerControl.add(s);
+                }
+            }
+        }
+        //=======================================================================
         //解析完成,开始封装数据
+        //=======================================================================
         //包装需要上电的芯片信息.
         Map<String,List<GraphData>> packegData = new HashMap<>();//打包发给单片机的数据
         for(String node : needPower){
@@ -170,6 +195,46 @@ public class WorkingController implements CommunityConstant {
                 }
             }
         }
+        //打包电平控制端的数据
+        for(String node : needHighControl){
+            for(String key : controlLinkedListMap.keySet()){
+                if(key.contains(node.split(",")[0])){
+                    for(GraphData g : controlLinkedListMap.get(key)){
+                        if(node.contains(g.getTo())){
+                            List<GraphData> list;
+                            if(!packegData.containsKey("highPowerTo")){
+                                list = new ArrayList<>();
+                            }else{
+                                list = packegData.get("highPowerTo");
+                            }
+                            list.add(g);
+                            packegData.put("highPowerTo",list);
+                        }
+                    }
+                }
+            }
+        }
+        for(String node : needLowerControl){
+            for(String key : controlLinkedListMap.keySet()){
+                if(key.contains(node.split(",")[0])){
+                    for(GraphData g : controlLinkedListMap.get(key)){
+                        if(node.contains(g.getTo())){
+                            List<GraphData> list;
+                            if(!packegData.containsKey("lowerPowerTo")){
+                                list = new ArrayList<>();
+                            }else{
+                                list = packegData.get("lowerPowerTo");
+                            }
+                            list.add(g);
+                            packegData.put("lowerPowerTo",list);
+                        }
+                    }
+                }
+            }
+        }
+        //======================================================================
+        //包装端口信息
+        //======================================================================
         //获取需要检测电平位置的芯片的端口信息
         List<GraphData> nodeToCheckData = packegData.get("nodeToCheck");
         List<GraphData> filterCheckData = new ArrayList<>();
@@ -194,8 +259,127 @@ public class WorkingController implements CommunityConstant {
         }
         packegData.put("nodeToCheck",filterCheckData);
         //打包控制端信息
+        List<GraphData> highPowerToData = packegData.get("highPowerTo");
+        List<GraphData> lowerPowerToData = packegData.get("lowerPowerTo");
+        List<GraphData> packageHighPowerTo = new ArrayList<>();
+        List<GraphData> packageLowerPowerTo = new ArrayList<>();
+        for(GraphData data : graphData){
+            for(GraphData highNode : highPowerToData){
+                String dataForm = data.getFrom();
+                String dataFormPort = data.getFromPort();
+                String dataTo = data.getTo();
+                String dataToPort = data.getToPort();
+                String highTo = highNode.getTo();
+                String highToPort = highNode.getToPort().split("_")[1];
+                if(dataForm.contains("高电平")){
+                    if(highTo.contains(dataTo.split(",")[0])){
+                        if(dataToPort.equals(highToPort)){
+                            packageHighPowerTo.add(highNode);
+                        }
+                    }
+                }else if(dataTo.contains("高电平")){
+                    if(highTo.contains(dataForm.split(",")[0])){
+                        if(dataFormPort.equals(highToPort)){
+                            packageHighPowerTo.add(highNode);
+                        }
+                    }
+                }
+            }
+            for(GraphData lowerNode : lowerPowerToData){
+                String dataForm = data.getFrom();
+                String dataFormPort = data.getFromPort();
+                String dataTo = data.getTo();
+                String dataToPort = data.getToPort();
+                String lowerTo = lowerNode.getTo();
+                String lowerToPort = lowerNode.getToPort().split("_")[1];
+                if(dataForm.contains("低电平")){
+                    if(lowerTo.contains(dataTo.split(",")[0])){
+                        if(dataToPort.equals(lowerToPort)){
+                            packageLowerPowerTo.add(lowerNode);
+                        }
+                    }
+                }else if (dataTo.contains("低电平")){
+                    if(lowerTo.contains(dataForm.split(",")[0])){
+                        if(dataFormPort.equals(lowerToPort)){
+                            packageLowerPowerTo.add(lowerNode);
+                        }
+                    }
+                }
+            }
+        }
+        packegData.put("highPowerTo",packageHighPowerTo);
+        packegData.put("lowerPowerTo",packageLowerPowerTo);
+        //=======================================================================
 
-        logger.info("打包的数据: " + packegData.toString());
+        //处理数据,打包单片机端方便处理的格式==========================================
+        /* 拟定数据结构: Map<String,List<String>>
+         * 原先的格式:
+         * {
+         *      lowerPowerTo : [GraphData(cdmId=-1, graphId=-1, from=control, fromPort=control_port5, to=74LS20, toPort=74LS20_port12)],
+         *      powerToNode : [GraphData(cdmId=-1, graphId=-1, from=power, fromPort=power_port2, to=74LS20, toPort=74LS20_port14)],
+         *      highPowerTo : [GraphData(cdmId=-1, graphId=-1, from=control, fromPort=control_port4, to=74LS20, toPort=74LS20_port13)],
+         *      nodeToCheck : [GraphData(cdmId=-1, graphId=-1, from=74LS20, fromPort=74LS20_port8, to=check, toPort=check_port1)]
+         * }
+         * 拟定格式:
+         * 注意点: 当前为单实验模式,也就是单次实验只能使用1个芯片.
+         *  {
+         *      lowerPowerTo : ["c5",...],//表示开启八路继电器的哪路,并且是输出低电平
+         *      powerToNode : ["p2",...],//表示开启继电器的哪一路,注,此处是使用了3-8译码器的,可能可以再封装一次
+         *      highPowerTo : ["c4",...],//同lowerPowerTo
+         *      nodeToCheck : ["c1",...] //表示那一端检查端需要进行检查.
+         *  }
+         * */
+        Map<String,List<String>> sendData = new HashMap<>();//最终要发送的数据
+        sendData.put("lowerPowerTo",new ArrayList<>());
+        sendData.put("powerToNode",new ArrayList<>());
+        sendData.put("highPowerTo",new ArrayList<>());
+        sendData.put("nodeToCheck",new ArrayList<>());
+        for(String key : packegData.keySet()){
+            switch (key) {
+                case "lowerPowerTo" -> {
+                    List<GraphData> lpt = packegData.get("lowerPowerTo");
+                    List<String> lptdata = sendData.get("lowerPowerTo");
+                    for (GraphData data : lpt) {
+                        String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
+                        lptdata.add("c" + port);
+                    }
+                    sendData.put("lowerPowerTo", lptdata);
+                }
+                case "powerToNode" -> {
+                    List<GraphData> ptn = packegData.get("powerToNode");
+                    List<String> ptndata = sendData.get("powerToNode");
+                    for (GraphData data : ptn) {
+                        String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
+                        ptndata.add("p" + port);
+                    }
+                    sendData.put("powerToNode", ptndata);
+                }
+                case "highPowerTo" -> {
+                    List<GraphData> hpt = packegData.get("highPowerTo");
+                    List<String> hptdata = sendData.get("highPowerTo");
+                    for (GraphData data : hpt) {
+                        String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
+                        hptdata.add("c" + port);
+                    }
+                    sendData.put("highPowerTo", hptdata);
+                }
+                case "nodeToCheck" -> {
+                    List<GraphData> ntc = packegData.get("nodeToCheck");
+                    List<String> ntcdata = sendData.get("nodeToCheck");
+                    for (GraphData data : ntc) {
+                        String port = GraphDataStringPorcessUtil.getPort(data.getToPort());
+                        ntcdata.add("c" + port);
+                    }
+                    sendData.put("nodeToCheck", ntcdata);
+                }
+                default ->{
+                    //do nothing
+                }
+            }
+        }
+        //=======================================================================
+        logger.info("打包的数据: " + packegData);
+        logger.info("二次封装的数据: "  + sendData);
         //封装完成,准备调用单片机处理
         if(socketService.getEsp8266ServiceMap() == null || socketService.getEsp8266ServiceMap().size() == 0){
             logger.info("===========当前没有可用客户机!请联系管理员!=============");
@@ -231,18 +415,17 @@ public class WorkingController implements CommunityConstant {
                     while((index = inputStream.read(buffer)) != -1){
                         //保持连接,进行数据收发
                         String getMsg = new String(buffer,0,index, StandardCharsets.UTF_8);
-                        System.out.println("客户端的消息: " + getMsg);
+                        logger.info("客户端的消息: " + getMsg);
                         if(getMsg.contains(ESP8266FINISH)){
                             logger.info("通信完成,客户端已发送结束连接请求 : " + getMsg);
                             break;
                         }
                         logger.info("获取一次消息完成");
-                        System.out.println("请发送消息: ");
                     }
                     client.setStatus(ESP8266WAITTING);
                 }catch (IOException e){
                     client.setStatus(ESP8266WAITTING);
-                    System.out.println("获取流失败!" + e.getMessage());
+                    logger.info("获取流失败!" + e.getMessage());
                 }
             }
         }else{
