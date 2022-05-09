@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/working")
@@ -238,77 +235,88 @@ public class WorkingController implements CommunityConstant {
         //获取需要检测电平位置的芯片的端口信息
         List<GraphData> nodeToCheckData = packegData.get("nodeToCheck");
         List<GraphData> filterCheckData = new ArrayList<>();
-        for(GraphData data : graphData){
-            for(GraphData checkNode : nodeToCheckData){
-                String dataForm = data.getFrom();
-                String dataFormPort = data.getFromPort();
-                String dataTo = data.getTo();
-                String dataToPort = data.getToPort();
-                String checkNodeForm = checkNode.getFrom();
-                String checkNodeFormPort = checkNode.getFromPort().split("_")[1];
-                if(dataForm.contains(checkNodeForm)){
-                    if(dataFormPort.equals(checkNodeFormPort)){
-                        filterCheckData.add(checkNode);
-                    }
-                }else if(dataTo.contains(checkNodeForm)){
-                    if(dataToPort.equals(checkNodeFormPort)){
-                        filterCheckData.add(checkNode);
+        if(nodeToCheckData != null && nodeToCheckData.size() > 0){
+            for(GraphData data : graphData){
+                for(GraphData checkNode : nodeToCheckData){
+                    String dataForm = data.getFrom();
+                    String dataFormPort = data.getFromPort();
+                    String dataTo = data.getTo();
+                    String dataToPort = data.getToPort();
+                    String checkNodeForm = checkNode.getFrom();
+                    String checkNodeFormPort = checkNode.getFromPort().split("_")[1];
+                    if(dataForm.contains(checkNodeForm)){
+                        if(dataFormPort.equals(checkNodeFormPort)){
+                            filterCheckData.add(checkNode);
+                        }
+                    }else if(dataTo.contains(checkNodeForm)){
+                        if(dataToPort.equals(checkNodeFormPort)){
+                            filterCheckData.add(checkNode);
+                        }
                     }
                 }
             }
+            packegData.put("nodeToCheck",filterCheckData);
         }
-        packegData.put("nodeToCheck",filterCheckData);
         //打包控制端信息
         List<GraphData> highPowerToData = packegData.get("highPowerTo");
         List<GraphData> lowerPowerToData = packegData.get("lowerPowerTo");
         List<GraphData> packageHighPowerTo = new ArrayList<>();
         List<GraphData> packageLowerPowerTo = new ArrayList<>();
         for(GraphData data : graphData){
-            for(GraphData highNode : highPowerToData){
-                String dataForm = data.getFrom();
-                String dataFormPort = data.getFromPort();
-                String dataTo = data.getTo();
-                String dataToPort = data.getToPort();
-                String highTo = highNode.getTo();
-                String highToPort = highNode.getToPort().split("_")[1];
-                if(dataForm.contains("高电平")){
-                    if(highTo.contains(dataTo.split(",")[0])){
-                        if(dataToPort.equals(highToPort)){
-                            packageHighPowerTo.add(highNode);
+            if(highPowerToData != null && highPowerToData.size() > 0){
+                for(GraphData highNode : highPowerToData){
+                    String dataForm = data.getFrom();
+                    String dataFormPort = data.getFromPort();
+                    String dataTo = data.getTo();
+                    String dataToPort = data.getToPort();
+                    String highTo = highNode.getTo();
+                    String highToPort = highNode.getToPort().split("_")[1];
+                    if(dataForm.contains("高电平")){
+                        if(highTo.contains(dataTo.split(",")[0])){
+                            if(dataToPort.equals(highToPort)){
+                                packageHighPowerTo.add(highNode);
+                            }
                         }
-                    }
-                }else if(dataTo.contains("高电平")){
-                    if(highTo.contains(dataForm.split(",")[0])){
-                        if(dataFormPort.equals(highToPort)){
-                            packageHighPowerTo.add(highNode);
+                    }else if(dataTo.contains("高电平")){
+                        if(highTo.contains(dataForm.split(",")[0])){
+                            if(dataFormPort.equals(highToPort)){
+                                packageHighPowerTo.add(highNode);
+                            }
                         }
                     }
                 }
             }
-            for(GraphData lowerNode : lowerPowerToData){
-                String dataForm = data.getFrom();
-                String dataFormPort = data.getFromPort();
-                String dataTo = data.getTo();
-                String dataToPort = data.getToPort();
-                String lowerTo = lowerNode.getTo();
-                String lowerToPort = lowerNode.getToPort().split("_")[1];
-                if(dataForm.contains("低电平")){
-                    if(lowerTo.contains(dataTo.split(",")[0])){
-                        if(dataToPort.equals(lowerToPort)){
-                            packageLowerPowerTo.add(lowerNode);
+            if(lowerPowerToData != null && lowerPowerToData.size() > 0){
+                for(GraphData lowerNode : lowerPowerToData){
+                    String dataForm = data.getFrom();
+                    String dataFormPort = data.getFromPort();
+                    String dataTo = data.getTo();
+                    String dataToPort = data.getToPort();
+                    String lowerTo = lowerNode.getTo();
+                    String lowerToPort = lowerNode.getToPort().split("_")[1];
+                    if(dataForm.contains("低电平")){
+                        if(lowerTo.contains(dataTo.split(",")[0])){
+                            if(dataToPort.equals(lowerToPort)){
+                                packageLowerPowerTo.add(lowerNode);
+                            }
                         }
-                    }
-                }else if (dataTo.contains("低电平")){
-                    if(lowerTo.contains(dataForm.split(",")[0])){
-                        if(dataFormPort.equals(lowerToPort)){
-                            packageLowerPowerTo.add(lowerNode);
+                    }else if (dataTo.contains("低电平")){
+                        if(lowerTo.contains(dataForm.split(",")[0])){
+                            if(dataFormPort.equals(lowerToPort)){
+                                packageLowerPowerTo.add(lowerNode);
+                            }
                         }
                     }
                 }
             }
         }
-        packegData.put("highPowerTo",packageHighPowerTo);
-        packegData.put("lowerPowerTo",packageLowerPowerTo);
+        if(!packageLowerPowerTo.isEmpty()){
+            packegData.put("lowerPowerTo",packageLowerPowerTo);
+        }
+        if(!packageHighPowerTo.isEmpty()){
+            packegData.put("highPowerTo",packageHighPowerTo);
+        }
+
         //=======================================================================
 
         //处理数据,打包单片机端方便处理的格式==========================================
@@ -341,7 +349,7 @@ public class WorkingController implements CommunityConstant {
                     List<String> lptdata = sendData.get("lowerPowerTo");
                     for (GraphData data : lpt) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
-                        lptdata.add("c" + port);
+                        lptdata.add("C" + port);
                     }
                     sendData.put("lowerPowerTo", lptdata);
                 }
@@ -350,7 +358,7 @@ public class WorkingController implements CommunityConstant {
                     List<String> ptndata = sendData.get("powerToNode");
                     for (GraphData data : ptn) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
-                        ptndata.add("p" + port);
+                        ptndata.add("P" + port);
                     }
                     sendData.put("powerToNode", ptndata);
                 }
@@ -359,7 +367,7 @@ public class WorkingController implements CommunityConstant {
                     List<String> hptdata = sendData.get("highPowerTo");
                     for (GraphData data : hpt) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
-                        hptdata.add("c" + port);
+                        hptdata.add("C" + port);
                     }
                     sendData.put("highPowerTo", hptdata);
                 }
@@ -368,7 +376,7 @@ public class WorkingController implements CommunityConstant {
                     List<String> ntcdata = sendData.get("nodeToCheck");
                     for (GraphData data : ntc) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getToPort());
-                        ntcdata.add("c" + port);
+                        ntcdata.add("C" + port);
                     }
                     sendData.put("nodeToCheck", ntcdata);
                 }
@@ -379,7 +387,7 @@ public class WorkingController implements CommunityConstant {
         }
         //=======================================================================
         logger.info("打包的数据: " + packegData);
-        logger.info("二次封装的数据: "  + sendData);
+        logger.info("二次封装的数据: "  + JSON.toJSONString(sendData));
         //封装完成,准备调用单片机处理
         if(socketService.getEsp8266ServiceMap() == null || socketService.getEsp8266ServiceMap().size() == 0){
             logger.info("===========当前没有可用客户机!请联系管理员!=============");
@@ -395,7 +403,10 @@ public class WorkingController implements CommunityConstant {
                 client = map.get(key);
             }
         }
+        Set<String> set = new HashSet<>();
+        Set<String> finalReData = Collections.synchronizedSet(set);
         if(client != null){
+            String getMessage = "";
             //当有非忙碌状态的单片机时,将其置为忙碌状态,并且取得与它的连接,开始与其通信
             logger.info("存在非忙碌的客户机,进行连接");
             client.setStatus(ESP8266BUSY);
@@ -404,21 +415,27 @@ public class WorkingController implements CommunityConstant {
                 logger.info("取得与客户端:" + socket.getInetAddress() + ":" + socket.getPort() + " 的连接,开始通信");
                 //连接状态时,进行消息发送
                 try{
-                    InputStream inputStream = socket.getInputStream();
-                    OutputStream out = socket.getOutputStream();
-                    String message = "连接成功,这是服务器发送的消息";
-                    client.senData(message);
-                    out.flush();
-                    byte[] buffer = new byte[1024];
-                    int index = -1;
-                    logger.info("发送了一条数据");
-                    while((index = inputStream.read(buffer)) != -1){
+                    DataInputStream in = new DataInputStream(socket.getInputStream());
+                    DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                    //发送数据
+                    out.writeUTF(JSON.toJSONString(sendData));
+                    logger.info("发送数据完成,发送数据为: " + sendData);
+                    while(true){
                         //保持连接,进行数据收发
-                        String getMsg = new String(buffer,0,index, StandardCharsets.UTF_8);
-                        logger.info("客户端的消息: " + getMsg);
-                        if(getMsg.contains(ESP8266FINISH)){
-                            logger.info("通信完成,客户端已发送结束连接请求 : " + getMsg);
+                        int available = 0;
+                        while (available == 0) {
+                            available = in.available();
+                        }
+                        logger.info("数据长度: " + String.valueOf(available));
+                        byte[] buffer = new byte[available];
+                        in.read(buffer);
+                        getMessage = new String(buffer);
+                        if(getMessage.contains(ESP8266FINISH)){
+                            logger.info("客户端发送结束连接请求 : " + getMessage);
                             break;
+                        }else{
+                            logger.info("本次返回的结果 : " + getMessage);
+                            finalReData.add(getMessage);
                         }
                         logger.info("获取一次消息完成");
                     }
@@ -431,24 +448,11 @@ public class WorkingController implements CommunityConstant {
         }else{
             logger.info("============所有客户机都处于忙碌状态!请等待=================");
         }
-        //if(client != null){
-        //    //当有非忙碌状态的单片机时,将其置为忙碌状态,并且取得与它的连接,开始与其通信
-        //    client.setStatus(ESP8266BUSY);
-        //    client.senData("与客户端进行连接!!!!!!!-------------TEST消息");
-        //    //将继电器位置发给单片机,由单片机完成电路连接
-        //    /*准备调用单片机客户端接口,调用Service,在Service中去处理接口调用*/
-        //
-        //
-        //    /*调用完毕*/
-        //    client.setStatus(ESP8266WAITTING);
-        //}
-
-
         //通信完成后,更新连接状态为非忙碌,并且释放流资源.
         /*封装回传数据*/
+        //finalReData中包含了回传的数据,为adc:[1000个取样点],check:GPIOC端口的高八位数据或低八位数据
 
-
-
+        //
         return JSON.toJSONString(resultMap);
     }
 }
