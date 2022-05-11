@@ -118,16 +118,22 @@
             </div>
         </div>
         <div class="row">
-            <div id="yjdetail">
-
+            <div class="col-md-2">
+                <input type="button" value="获取连接数据" id="databtn">
+                <input type="button" value="提交数据" id="submitData">
             </div>
-            <div id="datashow">
-
+            <div id="datashow" class="col-md-9">
+                <div>
+                    <ul class="list-inline" id="datashowList">
+                        <!--此处显示检测端信息-->
+                    </ul>
+                </div>
+                <div id="waveform">
+                    <ul id="waveformList" style="list-style: none">
+                        <!--此处显示波形信息-->
+                    </ul>
+                </div>
             </div>
-        </div>
-        <div>
-            <input type="button" value="获取连接数据" id="databtn">
-            <input type="button" value="提交数据" id="submitData">
         </div>
     </div>
 </div>

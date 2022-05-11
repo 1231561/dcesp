@@ -1,0 +1,327 @@
+{
+  "powerLinked":
+  [
+    {
+      "form":"power",
+      "to": "74LS04",
+      "formPort": "power_port0",
+      "toPort": "74LS04_port14"
+    },
+    {
+      "form": "power",
+      "to": "74LS00",
+      "formPort": "power_port1",
+      "toPort": "74LS00_port14"
+    },
+    {
+      "form": "power",
+      "to": "74LS20",
+      "formPort": "power_port2",
+      "toPort": "74LS20_port14"
+    },
+    {
+      "form": "power",
+      "to": "74LS02",
+      "formPort": "power_port3",
+      "toPort": "74LS02_port14"
+    }
+  ],
+  "checkLinked":
+    {
+      "74LS04CheckLinked": [
+        {
+          "form": "74LS04",
+          "to": "check",
+          "formPort": "74LS04_port2",
+          "toPort": "check_port0"
+        },
+        {
+          "form": "74LS04",
+          "to": "check",
+          "formPort": "74LS04_port4",
+          "toPort": "check_port1"
+        },
+        {
+          "form": "74LS04",
+          "to": "check",
+          "formPort": "74LS04_port6",
+          "toPort": "check_port2"
+        },
+        {
+          "form":"74LS04",
+          "to": "check",
+          "formPort": "74LS04_port12",
+          "toPort":"check_port3"
+        },
+        {
+          "form":"74LS04",
+          "to": "check",
+          "formPort": "74LS04_port10",
+          "toPort":"check_port4"
+        },
+        {
+          "form":"74LS04",
+          "to": "check",
+          "formPort": "74LS04_port8",
+          "toPort":"check_port5"
+        }
+      ],
+      "74LS00CheckLinked": [
+        {
+          "form":"74LS00",
+          "to": "check",
+          "formPort": "74LS00_port3",
+          "toPort":"check_port0"
+        },
+        {
+          "form":"74LS00",
+          "to": "check",
+          "formPort": "74LS00_port6",
+          "toPort":"check_port1"
+        },
+        {
+          "form":"74LS00",
+          "to": "check",
+          "formPort": "74LS00_port11",
+          "toPort":"check_port2"
+        },
+        {
+          "form":"74LS00",
+          "to": "check",
+          "formPort": "74LS00_port8",
+          "toPort":"check_port3"
+        }
+      ],
+      "74LS20CheckLinked": [
+        {
+          "form":"74LS20",
+          "to": "check",
+          "formPort": "74LS20_port6",
+          "toPort":"check_port0"
+        },
+        {
+          "form":"74LS20",
+          "to": "check",
+          "formPort": "74LS20_port8",
+          "toPort":"check_port1"
+        }
+      ],
+      "74LS02CheckLinked": [
+        {
+          "form":"74LS02",
+          "to": "check",
+          "formPort": "74LS02_port1",
+          "toPort":"check_port0"
+        },
+        {
+          "form":"74LS02",
+          "to": "check",
+          "formPort": "74LS02_port4",
+          "toPort":"check_port1"
+        },
+        {
+          "form":"74LS02",
+          "to": "check",
+          "formPort": "74LS02_port13",
+          "toPort":"check_port2"
+        },
+        {
+          "form":"74LS02",
+          "to": "check",
+          "formPort": "74LS02_port10",
+          "toPort":"check_port3"
+        }
+      ]
+    },
+  "controlLinked":
+  {
+      "74LS04ControlLinked":[
+        {
+          "form": "control",
+          "to": "74LS04",
+          "formPort": "control_port0",
+          "toPort": "74LS04_port1"
+        },
+        {
+          "form": "control",
+          "to": "74LS04",
+          "formPort": "control_port1",
+          "toPort": "74LS04_port3"
+        },
+        {
+          "form": "control",
+          "to": "74LS04",
+          "formPort": "control_port2",
+          "toPort": "74LS04_port5"
+        },
+        {
+          "form": "control",
+          "to": "74LS04",
+          "formPort": "control_port3",
+          "toPort": "74LS04_port13"
+        },
+        {
+          "form": "control",
+          "to": "74LS04",
+          "formPort": "control_port4",
+          "toPort": "74LS04_port11"
+        },
+        {
+          "form": "control",
+          "to": "74LS04",
+          "formPort": "control_port5",
+          "toPort": "74LS04_port9"
+        }
+      ],
+      "74LS00ControlLinked": [
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port0",
+          "toPort": "74LS00_port1"
+        },
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port1",
+          "toPort": "74LS00_port2"
+        },
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port2",
+          "toPort": "74LS00_port4"
+        },
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port3",
+          "toPort": "74LS00_port5"
+        },
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port4",
+          "toPort": "74LS00_port13"
+        },
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port5",
+          "toPort": "74LS00_port12"
+        },
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port6",
+          "toPort": "74LS00_port10"
+        },
+        {
+          "form": "control",
+          "to": "74LS00",
+          "formPort": "control_port7",
+          "toPort": "74LS00_port9"
+        }
+      ],
+      "74LS20ControlLinked": [
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port0",
+          "toPort": "74LS20_port1"
+        },
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port1",
+          "toPort": "74LS20_port2"
+        },
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port2",
+          "toPort": "74LS20_port4"
+        },
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port3",
+          "toPort": "74LS20_port5"
+        },
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port4",
+          "toPort": "74LS20_port13"
+        },
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port5",
+          "toPort": "74LS20_port12"
+        },
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port6",
+          "toPort": "74LS20_port10"
+        },
+        {
+          "form": "control",
+          "to": "74LS20",
+          "formPort": "control_port7",
+          "toPort": "74LS20_port9"
+        }
+      ],
+      "74LS02ControlLinked":[
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port0",
+          "toPort": "74LS02_port3"
+        },
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port1",
+          "toPort": "74LS02_port2"
+        },
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port2",
+          "toPort": "74LS02_port6"
+        },
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port3",
+          "toPort": "74LS02_port5"
+        },
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port4",
+          "toPort": "74LS02_port11"
+        },
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port5",
+          "toPort": "74LS02_port12"
+        },
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port6",
+          "toPort": "74LS02_port8"
+        },
+        {
+          "form": "control",
+          "to": "74LS02",
+          "formPort": "control_port7",
+          "toPort": "74LS02_port9"
+        }
+      ]
+    }
+}

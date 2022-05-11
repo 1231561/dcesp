@@ -100,21 +100,21 @@ public class WorkingController implements CommunityConstant {
         //首先找需要上电的芯片
         List<List<String>> powerToGround = roads.get("powerToGround");//电源到接地的路径
         List<List<String>> powerToMeasure = roads.get("powerToMeasure");//电源到检测端的路径
-        List<List<String>> highPowerTo = roads.get("highPowerTo");
-        List<List<String>> lowerPowerTo = roads.get("lowerPowerTo");
+        List<List<String>> highPowerTo = roads.get("highPowerTo");//高电平-地
+        List<List<String>> lowerPowerTo = roads.get("lowerPowerTo");//低电平-地
         List<List<String>> afterFilterPowerToMeasureData = new ArrayList<>();//过滤后的数据
         //过滤检测端数据,当先出现接地后出现检测端时,该数据直接忽略.
         boolean isGround = false;
         boolean isGroundBeforMeasur = false;
         for(List<String> data : powerToMeasure){
             for(String node : data){
-                if(!isGround && node.contains("电平检测")){
+                if(!isGround && (node.contains("电平检测") || node.contains("示波器"))){
                     break;
                 }
                 if(!isGround && node.contains("接地")){
                     isGround = true;
                 }
-                if(isGround && node.contains("电平检测")){
+                if(isGround && (node.contains("电平检测") || node.contains("示波器"))){
                     isGroundBeforMeasur = true;
                 }
             }
@@ -450,9 +450,55 @@ public class WorkingController implements CommunityConstant {
         }
         //通信完成后,更新连接状态为非忙碌,并且释放流资源.
         /*封装回传数据*/
-        //finalReData中包含了回传的数据,为adc:[1000个取样点],check:GPIOC端口的高八位数据或低八位数据
-
-        //
+        //finalReData中包含了回传的数据,为adc:[600个取样点],check:GPIOC端口的高八位数据或低八位数据
+        String needReData = "";
+        for (String reData : finalReData) {
+            if(reData.length() == 615){
+                needReData = reData;
+                break;
+            }
+        }
+        //首先处理ADC数据,根据是否有示波器,判断是否要封装adc数据数组回去.
+        boolean hasSBQ = false;//默认没有
+        String sbqName = "";
+        for(GraphDataFromFront n : graphDataFromFront){
+            if(n.getFrom().contains("示波器") || n.getTo().contains("示波器")){
+                hasSBQ = true;
+                sbqName = n.getFrom().contains("示波器") ? n.getFrom() : n.getTo();
+            }
+        }
+        if(hasSBQ){
+            double[] resultAdc = new double[300];
+            int resultAdcIndex = 0;
+            //对回传ADC数据进行处理,每两位数据为一个取样点,前一个数据为高八位,后一个数据为低八位.
+            String adcReData = needReData.split(",")[0];
+            //得到的数据是12位的,也就是区分4096个,故每一个采样点电压值为 : 3.3 * 12位的值 / 4096;
+            int start = 0;
+            int end = 0;
+            for(int i = 0;i < adcReData.length();i++){
+                if(adcReData.charAt(i) == '['){
+                    start = i;
+                }
+                if(adcReData.charAt(i) == ']'){
+                    end = i;
+                    break;
+                }
+            }
+            for(int i = start + 1;i < end;){
+                int high = adcReData.charAt(i++);
+                int lower = adcReData.charAt(i++);
+                int pointer = (high << 8) | lower;
+                resultAdc[resultAdcIndex++] = (double) pointer / 4096 * 3.3;
+            }
+            resultMap.put("sbqName",sbqName);
+            resultMap.put("adcData",resultAdc);
+        }
+        //处理电平检测数据并封装
+        if(null != sendData.get("nodeToCheck") && !sendData.get("nodeToCheck").isEmpty()){
+            resultMap.put("nodeToCheck",sendData.get("nodeToCheck"));
+            resultMap.put("gpiocData",needReData.split(",")[1].split(":")[1]);
+        }
+        //回传
         return JSON.toJSONString(resultMap);
     }
 }

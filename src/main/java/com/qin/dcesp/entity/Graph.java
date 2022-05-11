@@ -74,6 +74,7 @@ public class Graph {
             if(key.contains("电源")){
                 dfs(adjacencyTable,  key, "接地",new HashSet<>(),new ArrayList<>(),powerToGroundRoads);
                 dfs(adjacencyTable, key, "电平检测",new HashSet<>(),new ArrayList<>(),powerToMeasure);
+                dfs(adjacencyTable,key,"示波器",new HashSet<>(),new ArrayList<>(),powerToMeasure);
             }
             if(key.contains("高电平")){
                 dfs(adjacencyTable,key,"接地",new HashSet<>(),new ArrayList<>(),highPowerTo);
