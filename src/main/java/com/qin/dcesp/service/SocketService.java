@@ -3,20 +3,15 @@ package com.qin.dcesp.service;
 import com.qin.dcesp.utils.CommunityConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 进行Socket通信
@@ -28,7 +23,7 @@ public class SocketService implements CommunityConstant {
     private static final Logger logger = LoggerFactory.getLogger(SocketService.class);
 
     //服务器端口
-    private static final int servicePort = 10005;
+    private static final int SERVICE_PORT = 10005;
 
     //线程池
     private ExecutorService executorService;
@@ -88,9 +83,7 @@ public class SocketService implements CommunityConstant {
         try {
             logger.info("Socket Service is starting.");
             //设置socket端口
-            serverSocket = new ServerSocket(servicePort);
-            System.out.println(serverSocket.getInetAddress()+":"+serverSocket.getLocalPort());
-            System.out.println(Inet4Address.getLocalHost().getHostAddress());
+            serverSocket = new ServerSocket(SERVICE_PORT);
             //创建线程池
             executorService = Executors.newFixedThreadPool(50);
             for(int i = 0;i < 10;i++){
@@ -121,15 +114,5 @@ public class SocketService implements CommunityConstant {
         }catch (Exception e) {
             logger.error("创建线程池出错!==========" + e.getMessage());
         }
-    }
-    public String replaceMessage(String message){
-        //处理数据,清除空格,水平制表符,换行,回车
-        String res = "";
-        if(message != null){
-            Pattern p = Pattern.compile("\\s*|\t|\r|\n");
-            Matcher m = p.matcher(message);
-            res = m.replaceAll("");
-        }
-        return res;
     }
 }
