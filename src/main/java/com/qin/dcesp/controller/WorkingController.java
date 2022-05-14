@@ -498,6 +498,7 @@ public class WorkingController implements CommunityConstant {
             resultMap.put("nodeToCheck",sendData.get("nodeToCheck"));
             resultMap.put("gpiocData",needReData.split(",")[1].split(":")[1]);
         }
+        logger.info("-----------------数据打包完成,返回给前端------------------");
         //回传
         return JSON.toJSONString(resultMap);
     }

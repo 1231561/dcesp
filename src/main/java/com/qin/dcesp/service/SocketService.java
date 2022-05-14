@@ -96,6 +96,7 @@ public class SocketService implements CommunityConstant {
                         //等待连接
                         logger.info("获取连接成功!");
                         Socket socket = accept;
+                        socket.setSoTimeout(30000);//超时时间30秒,1秒数据回传,1秒数据处理,10秒等待单片机处理数据,10秒等待单片机数据回传.
                         String socketName = socket.getInetAddress() + ":" + socket.getPort();
                         socketMap.put(socketName,socket);//存储当前连接的连接对象.
                         //进行Esp8266Service的封装

@@ -112,7 +112,13 @@ public class UserController {
         String kaptcha = null;
         if(StringUtils.isNotBlank(kaptchaOwner)){
             String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
-            kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+            if(null != redisTemplate.hasKey(redisKey)){
+                //如果存在key
+                kaptcha = (String) redisTemplate.opsForValue().get(redisKey);//如果超时就会找不到导致报错
+            }else{
+                //如果key过期,就直接返回登录页
+                return "/site/login";
+            }
         }
         //检查验证码
         if(StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)){

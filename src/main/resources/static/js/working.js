@@ -784,9 +784,62 @@ diagram.model =
             ]
         }
     );
-
+var waveOptions =
+    {
+        title:{text: '示波器'},
+        animation: false,
+        xAxis: {
+            name: 'time',
+            min: 0,
+            max: 1,
+            minorTick: {
+                show: true
+            },
+            minorSplitLine: {
+                show: true
+            }
+        },
+        yAxis: {
+            name: 'potential',
+            min: -4,
+            max: 4,
+            minorTick: {
+                show: true
+            },
+            minorSplitLine: {
+                show: true
+            }
+        },
+        dataZoom: [
+            {
+                show: true,
+                type: 'inside',
+                filterMode: 'none',
+                xAxisIndex: [0],
+                startValue: 0,
+                endValue: 20
+            },
+            {
+                show: true,
+                type: 'inside',
+                filterMode: 'none',
+                yAxisIndex: [0],
+                startValue: 0,
+                endValue: 20
+            }
+        ],
+        series: [
+            {
+                type: 'line',
+                showSymbol: false,
+                clip: true,
+                data: waveData
+            }
+        ]
+    };
 // var newnode = {key: '74LS20,1',category: 'node14port'}
 // diagram.model.addNodeData(newnode);
+var waveData = [[0,0],[0,0],[0,0]];
 
 var lis = document.getElementsByTagName('li');
 for(let i = 0;i < lis.length;i++){
@@ -832,25 +885,25 @@ for(let i = 0;i < lis.length;i++){
 
         //生成数据显示格子:
         if(nodeName.includes('电平检测')){
-            var dpCheckId = 'dpCheck' + nodeName.split(',')[1];
+            var dpCheckId = 'dpCheck,' + nodeName.split(',')[1];
             alert("加入检测框");
             //在下方生成数据显示位
             $('#datashowList').append(
                 '<li class="list-inline-item"  id="' + dpCheckId + '">' +
-                '<div>' +
-                '<span>' + nodeName + '</span>' +
-                '</div>' +
-                '<div>' +
-                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-octagon-fill" viewBox="0 0 16 16">\n' +
-                '  <path d="M11.107 0a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353L4.54.146A.5.5 0 0 1 4.893 0h6.214z"/>\n' +
-                '</svg>' +
-                '</div>' +
+                    '<div>' +
+                        '<span>' + nodeName + '</span>' +
+                    '</div>' +
+                    '<div>' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-octagon-fill" viewBox="0 0 16 16">\n' +
+                        '  <path d="M11.107 0a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353L4.54.146A.5.5 0 0 1 4.893 0h6.214z"/>\n' +
+                        '</svg>' +
+                    '</div>' +
                 '</li>'
             );
         }
         if(nodeName.includes('示波器')){
             alert('添加示波器');
-            var waveFormId = 'wfCheck' + nodeName.split(',')[1];
+            var waveFormId = 'wfCheck,' + nodeName.split(',')[1];
             $('#waveformList').append(
                 '<li id="' + waveFormId + '">' +
                 '<div style="width=400px;height: 200px">' +
@@ -859,58 +912,8 @@ for(let i = 0;i < lis.length;i++){
                 '</li>'
             );
             console.log(document.getElementById(waveFormId));
-            echarts.init(document.getElementById(waveFormId).getElementsByTagName('div')[0]).setOption({
-                title:{text: '示波器' + nodeName.split(',')[1]},
-                animation: false,
-                xAxis: {
-                    name: 'time',
-                    min: 0,
-                    max: 1,
-                    minorTick: {
-                        show: true
-                    },
-                    minorSplitLine: {
-                        show: true
-                    }
-                },
-                yAxis: {
-                    name: 'potential',
-                    min: -4,
-                    max: 4,
-                    minorTick: {
-                        show: true
-                    },
-                    minorSplitLine: {
-                        show: true
-                    }
-                },
-                dataZoom: [
-                    {
-                        show: true,
-                        type: 'inside',
-                        filterMode: 'none',
-                        xAxisIndex: [0],
-                        startValue: 0,
-                        endValue: 20
-                    },
-                    {
-                        show: true,
-                        type: 'inside',
-                        filterMode: 'none',
-                        yAxisIndex: [0],
-                        startValue: 0,
-                        endValue: 20
-                    }
-                ],
-                series: [
-                    {
-                        type: 'line',
-                        showSymbol: false,
-                        clip: true,
-                        data: [[0.1,2],[0.13,0.2],[0.15,0.7],[0.2,0.9],[0.21,1.9],[0.24,3.1],[0.28,2.5],[0.3,3],[0.35,1.3],[0.5,2.4],[0.55,3.23],[0.7,4.12]]
-                    }
-                ]
-            });
+            waveOptions.title.text = "示波器" + nodeName.split(',')[1];
+            echarts.init(document.getElementById(waveFormId).getElementsByTagName('div')[0]).setOption(waveOptions);
         }
     }
 }
@@ -925,7 +928,7 @@ diagram.addDiagramListener("SelectionDeleted",function (e){
         //n包含删除节点的信息,其nb.key属性为删除节点的key属性.
         var deleteNodeKey = n.nb.key;
         if(deleteNodeKey.includes("电平检测")){
-            var dpCheckId = 'dpCheck' + deleteNodeKey.split(',')[1];
+            var dpCheckId = 'dpCheck,' + deleteNodeKey.split(',')[1];
             $('#datashowList').children().each(function(u,i){
                 //i为标签元素
                 if(i.id == dpCheckId){
@@ -934,7 +937,7 @@ diagram.addDiagramListener("SelectionDeleted",function (e){
             });
         }
         if(deleteNodeKey.includes("示波器")){
-            var waveFormId = 'wfCheck' + deleteNodeKey.split(',')[1];
+            var waveFormId = 'wfCheck,' + deleteNodeKey.split(',')[1];
             $('#waveformList').children().each(function(u,i){
                 if(i.id == waveFormId){
                     $('#' + waveFormId).remove();
@@ -966,13 +969,47 @@ btn.onclick = function(){
                 alert(data);
                 //等待数据
                 var resultData = JSON.parse(data);
-                if(resultData.adc){
-                    var adcArray = resultData.adc;
+                if(resultData.adcData){
+                    var adcArray = resultData.adcData;
+                    var sbqName = resultData.sbqName;
                     //处理adc数据,显示为波形
+                    waveData = [];
+                    for(let i = 0;i < 300;i++){
+                        let pointData = [i / 300,adcArray[i]];
+                        waveData.push(pointData);
+                    }
+
+                    console.log(waveData);
+
+                    var waveList = document.getElementById('waveformList').getElementsByTagName('li');
+                    waveList.map((index,wave)=>{
+                        if(wave.id.split(',')[1] == sbqName.split(',')[1]){
+                            waveOptions.series[0].data = waveData;
+                            echarts.init(document.getElementById(wave.id)
+                                .getElementsByTagName('div')[0])
+                                .setOption(waveOptions);
+                        }
+                    });
                 }
                 if(resultData.gpiocData){
-                    var gpiocData = resultData.gpiocData;
+                    var gpiocData = "0x" + resultData.gpiocData;
+                    var gpiocNum = (parseInt(gpiocData)).toString(2);
+                    var checkPoint = resultData.nodeToCheck;
+                    var checkLis = document.getElementById('datashowList').getElementsByTagName('li');
                     //处理检测端数据,控制检测位显示
+                    checkLis.map((index,li)=>{
+                        checkPoint.map((index,point)=>{
+                            let nowPoint = 0;
+                            for(let i = 0;i < point.length; i++){
+                                if('0' <= point[i] <= '9'){
+                                    nowPoint += (point[i] - '0');
+                                }
+                            }
+                            if(parseInt(li.id.split(',')[1]) === nowPoint){
+                                li.getElementsByTagName('div')[2].style.color = 'red';
+                            }
+                        });
+                    });
                 }
             }
         }
