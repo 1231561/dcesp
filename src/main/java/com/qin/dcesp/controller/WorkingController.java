@@ -15,6 +15,7 @@ import com.qin.dcesp.service.SocketService;
 import com.qin.dcesp.utils.CommunityConstant;
 import com.qin.dcesp.utils.GraphDataStringPorcessUtil;
 import com.qin.dcesp.utils.HostHolder;
+import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Controller
 @RequestMapping("/working")
@@ -43,6 +47,9 @@ public class WorkingController implements CommunityConstant {
 
     @Autowired
     SocketService socketService;
+
+    volatile public AtomicInteger timeoutCount = new AtomicInteger(10);
+    volatile public AtomicBoolean timeoutCountStart = new AtomicBoolean(false);
 
     /**
      * 电路请求处理
@@ -337,16 +344,16 @@ public class WorkingController implements CommunityConstant {
          *      nodeToCheck : ["c1",...] //表示那一端检查端需要进行检查.
          *  }
          * */
-        Map<String,List<String>> sendData = new HashMap<>();//最终要发送的数据
-        sendData.put("lowerPowerTo",new ArrayList<>());
-        sendData.put("powerToNode",new ArrayList<>());
-        sendData.put("highPowerTo",new ArrayList<>());
-        sendData.put("nodeToCheck",new ArrayList<>());
+        Map<String,Set<String>> sendData = new HashMap<>();//最终要发送的数据
+        sendData.put("lowerPowerTo",new HashSet<>());
+        sendData.put("powerToNode",new HashSet<>());
+        sendData.put("highPowerTo",new HashSet<>());
+        sendData.put("nodeToCheck",new HashSet<>());
         for(String key : packegData.keySet()){
             switch (key) {
                 case "lowerPowerTo" -> {
                     List<GraphData> lpt = packegData.get("lowerPowerTo");
-                    List<String> lptdata = sendData.get("lowerPowerTo");
+                    Set<String> lptdata = sendData.get("lowerPowerTo");
                     for (GraphData data : lpt) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
                         lptdata.add("C" + port);
@@ -355,7 +362,7 @@ public class WorkingController implements CommunityConstant {
                 }
                 case "powerToNode" -> {
                     List<GraphData> ptn = packegData.get("powerToNode");
-                    List<String> ptndata = sendData.get("powerToNode");
+                    Set<String> ptndata = sendData.get("powerToNode");
                     for (GraphData data : ptn) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
                         ptndata.add("P" + port);
@@ -364,7 +371,7 @@ public class WorkingController implements CommunityConstant {
                 }
                 case "highPowerTo" -> {
                     List<GraphData> hpt = packegData.get("highPowerTo");
-                    List<String> hptdata = sendData.get("highPowerTo");
+                    Set<String> hptdata = sendData.get("highPowerTo");
                     for (GraphData data : hpt) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getFromPort());
                         hptdata.add("C" + port);
@@ -373,7 +380,7 @@ public class WorkingController implements CommunityConstant {
                 }
                 case "nodeToCheck" -> {
                     List<GraphData> ntc = packegData.get("nodeToCheck");
-                    List<String> ntcdata = sendData.get("nodeToCheck");
+                    Set<String> ntcdata = sendData.get("nodeToCheck");
                     for (GraphData data : ntc) {
                         String port = GraphDataStringPorcessUtil.getPort(data.getToPort());
                         ntcdata.add("C" + port);
@@ -390,23 +397,67 @@ public class WorkingController implements CommunityConstant {
         logger.info("二次封装的数据: "  + JSON.toJSONString(sendData));
         //封装完成,准备调用单片机处理
         if(socketService.getEsp8266ServiceMap() == null || socketService.getEsp8266ServiceMap().size() == 0){
-            logger.info("===========当前没有可用客户机!请联系管理员!=============");
+            logger.info("===========1当前没有可用客户机!请联系管理员!=============");
             resultMap.put("code","error");
             resultMap.put("msg","无客户机!");
             return JSON.toJSONString(resultMap);
         }
         //查询所有已连接的单片机状态,查看是否有非忙碌状态的
         Map<String, Esp8266Service> map = socketService.getEsp8266ServiceMap();
+        Map<String,Socket> socketMap = socketService.getSocketMap();
         Esp8266Service client = null;
+        List<String> delSocketNameList = new ArrayList<>();
         for (String key : map.keySet()){
-            if(ESP8266WAITTING.equals(map.get(key).getStatus()) && !map.get(key).getSocket().isClosed()){
+            if(ESP8266WAITTING.equals(map.get(key).getStatus()) && !map.get(key).getSocket().isClosed()) {
                 client = map.get(key);
+                //数据发送前,确保客户端在线,发送一个HB心跳包,只要不出异常,就能往下走
+                try{
+                    //socket.sendUrgentData("HB".getBytes());//发送校验位,如果连接实际上是断开的话会导致异常
+                    //DataInputStream in = new DataInputStream(socket.getInputStream());
+
+                    Socket socket = client.getSocket();
+                    DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                    out.write("HB".getBytes());//发送检测数据,如果出现异常则说明有问题
+                    out.flush();
+                    logger.info("本连接不存在问题");
+                }catch (IOException e) {
+                    //如果存在异常,就把这个socket从map里删了.
+                    logger.error("该链接: " + key + "存在异常,可能已经断开,它将被删除");
+                    delSocketNameList.add(key);
+                }
+            }
+        }
+        for(String delName : delSocketNameList){
+            map.remove(delName);
+            socketMap.remove(delName);
+            logger.info("删除1条连接");
+        }
+        try {
+            Thread.sleep(5000);
+            Thread.sleep(1000);
+            Thread.sleep(1000);
+            logger.info("延时完成");
+        }catch (InterruptedException e){
+            logger.error("延时出错");
+        }
+
+        //删除之后如果没东西了,就说明不存在客户端,直接返回
+        if(map.isEmpty()){
+            logger.info("===========2当前没有可用客户机!请联系管理员!=============");
+            resultMap.put("code","error");
+            resultMap.put("msg","无客户机!");
+            return JSON.toJSONString(resultMap);
+        }else{
+            for(String key : map.keySet()){
+                client = map.get(key);
+                break;
             }
         }
         Set<String> set = new HashSet<>();
         Set<String> finalReData = Collections.synchronizedSet(set);
         if(client != null){
-            String getMessage = "";
+            AtomicReference<StringBuffer> getMessage = new AtomicReference<>(new StringBuffer());
+            AtomicReference<String> getM = new AtomicReference<>("");
             //当有非忙碌状态的单片机时,将其置为忙碌状态,并且取得与它的连接,开始与其通信
             logger.info("存在非忙碌的客户机,进行连接");
             client.setStatus(ESP8266BUSY);
@@ -415,48 +466,104 @@ public class WorkingController implements CommunityConstant {
                 logger.info("取得与客户端:" + socket.getInetAddress() + ":" + socket.getPort() + " 的连接,开始通信");
                 //连接状态时,进行消息发送
                 try{
+                    socket.setSoTimeout(3000);
                     DataInputStream in = new DataInputStream(socket.getInputStream());
                     DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                     //发送数据
-                    out.writeUTF(JSON.toJSONString(sendData));
-                    logger.info("发送数据完成,发送数据为: " + sendData);
-                    while(true){
-                        //保持连接,进行数据收发
-                        int available = 0;
-                        while (available == 0) {
-                            available = in.available();
-                        }
-                        logger.info("数据长度: " + String.valueOf(available));
-                        byte[] buffer = new byte[available];
-                        in.read(buffer);
-                        getMessage = new String(buffer);
-                        if(getMessage.contains(ESP8266FINISH)){
-                            logger.info("客户端发送结束连接请求 : " + getMessage);
-                            break;
-                        }else{
-                            logger.info("本次返回的结果 : " + getMessage);
-                            finalReData.add(getMessage);
-                        }
-                        logger.info("获取一次消息完成");
+                    while(in.available() != 0){
+                        in.skip(in.available());
+                        logger.info("忽略前一次剩下的数据");
                     }
-                    client.setStatus(ESP8266WAITTING);
+                    out.writeUTF(JSON.toJSONString(sendData));
+                    out.flush();
+                    logger.info("发送数据完成,发送数据为: " + sendData);
+                    Callable<AtomicReference<String>> task = ()->{
+                        while(true) {
+                            logger.info("等待接收数据");
+
+                            /*阻塞区域---------------------------*/
+                            //保持连接,进行数据收发
+                            int available = 0;
+                            while (available == 0) {
+                                available = in.available();
+                            }
+                            timeoutCount.set(10);
+                            logger.info("数据长度: " + available);
+                            byte[] buffer = new byte[available];
+                            in.read(buffer);//阻塞
+                            /*阻塞区域---------------------------*/
+
+                            getMessage.set(new StringBuffer());
+                            for (int i = 0; i < buffer.length; i++) {
+                                if (i != buffer.length - 1) {
+                                    if (buffer[i] < 0) {
+                                        getMessage.get().append((buffer[i] + 256)).append(",");
+                                    } else if (buffer[i] == 48) {
+                                        getMessage.get().append(0).append(",");
+                                    } else if (buffer[i] >= 0) {
+                                        getMessage.get().append(buffer[i]).append(",");
+                                    }
+                                } else {
+                                    if (buffer[i] < 0) {
+                                        getMessage.get().append((buffer[i] + 256));
+                                    } else if (buffer[i] == 48) {
+                                        getMessage.get().append(0);
+                                    } else if (buffer[i] >= 0) {
+                                        getMessage.get().append(buffer[i]);
+                                    }
+                                }
+                            }
+                            getM.set(new String(buffer));
+                            if(getM.get().contains(ESP8266FINISH)){
+                                logger.info("客户端发送结束连接请求 : " + getM.get());
+                                break;
+                            }else{
+                                logger.info("本次返回的结果 : " + getMessage.get());
+                                finalReData.add(getMessage.get().toString());
+                            }
+                            logger.info("获取消息完成");
+                        }
+                        return getM;
+                    };
+                    FutureTask<AtomicReference<String>> futureTask = new FutureTask<>(task);
+                    logger.info("启动任务");
+                    new Thread(futureTask).start();
+                    futureTask.get(120, TimeUnit.SECONDS);
                 }catch (IOException e){
-                    client.setStatus(ESP8266WAITTING);
                     logger.info("获取流失败!" + e.getMessage());
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
+                } catch (TimeoutException e) {
+                    //超时
+                    logger.info("接收数据超时!" + e.getMessage());
+                    resultMap.put("error","接收数据超时!");
+                    return JSON.toJSONString(resultMap);
+                } finally {
+                    client.setStatus(ESP8266WAITTING);
                 }
             }
         }else{
-            logger.info("============所有客户机都处于忙碌状态!请等待=================");
+            logger.info("===========3当前没有可用客户机!请联系管理员!=============");
+            resultMap.put("code","error");
+            resultMap.put("msg","无客户机!");
+            return JSON.toJSONString(resultMap);
         }
         //通信完成后,更新连接状态为非忙碌,并且释放流资源.
         /*封装回传数据*/
-        //finalReData中包含了回传的数据,为adc:[600个取样点],check:GPIOC端口的高八位数据或低八位数据
-        String needReData = "";
+        //finalReData中包含了回传的数据,为adc:[300个取样点](ADC精度为12位,一次传输8位.构建波形数据),check:100个GPIOC端口的取样点(防抖)
+        String[] needReData = new String[700];
         for (String reData : finalReData) {
-            if(reData.length() == 615){
-                needReData = reData;
+            String[] tempdata = reData.split(",");
+            if(tempdata.length == 700){
+                System.arraycopy(tempdata, 0, needReData, 0, 700);
                 break;
             }
+        }
+        if(needReData[0] == null){
+            logger.info("===========未接受到正确数据=============");
+            resultMap.put("code","error");
+            resultMap.put("msg","未接受到数据!,请再次提交!");
+            return JSON.toJSONString(resultMap);
         }
         //首先处理ADC数据,根据是否有示波器,判断是否要封装adc数据数组回去.
         boolean hasSBQ = false;//默认没有
@@ -471,22 +578,12 @@ public class WorkingController implements CommunityConstant {
             double[] resultAdc = new double[300];
             int resultAdcIndex = 0;
             //对回传ADC数据进行处理,每两位数据为一个取样点,前一个数据为高八位,后一个数据为低八位.
-            String adcReData = needReData.split(",")[0];
             //得到的数据是12位的,也就是区分4096个,故每一个采样点电压值为 : 3.3 * 12位的值 / 4096;
-            int start = 0;
-            int end = 0;
-            for(int i = 0;i < adcReData.length();i++){
-                if(adcReData.charAt(i) == '['){
-                    start = i;
-                }
-                if(adcReData.charAt(i) == ']'){
-                    end = i;
-                    break;
-                }
-            }
-            for(int i = start + 1;i < end;){
-                int high = adcReData.charAt(i++);
-                int lower = adcReData.charAt(i++);
+            for(int i = 0;i < 300;){
+                int high = Integer.parseInt(needReData[i++]);
+                int lower = Integer.parseInt(needReData[i++]);
+                high = high < 0 ? high + 256 : high;
+                lower = lower < 0 ? lower + 256 : lower;
                 int pointer = (high << 8) | lower;
                 resultAdc[resultAdcIndex++] = (double) pointer / 4096 * 3.3;
             }
@@ -495,11 +592,15 @@ public class WorkingController implements CommunityConstant {
         }
         //处理电平检测数据并封装
         if(null != sendData.get("nodeToCheck") && !sendData.get("nodeToCheck").isEmpty()){
+            logger.info("needData : " + Arrays.toString(needReData));
             resultMap.put("nodeToCheck",sendData.get("nodeToCheck"));
-            resultMap.put("gpiocData",needReData.split(",")[1].split(":")[1]);
+            int[] resultGpiocDataArr = new int[100];
+            for(int i = 600;i < needReData.length;i++){
+                resultGpiocDataArr[i - 600] = Integer.parseInt(needReData[i]);
+            }
+            resultMap.put("gpiocData",resultGpiocDataArr);
         }
         logger.info("-----------------数据打包完成,返回给前端------------------");
-        //回传
         return JSON.toJSONString(resultMap);
     }
 }

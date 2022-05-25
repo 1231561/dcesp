@@ -24,7 +24,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Comm
         //授权
         http.authorizeRequests().antMatchers(
                 "/personalCenter/**",
-                "/working/**"
+                "/working/**",
+                "/workingSpace"
         ).hasAnyAuthority("USER","ADMIN")//表示这些路径,现在有以下权限的话就可以访问
                 .antMatchers(
                         "/data/**").hasAnyAuthority("ADMIN")

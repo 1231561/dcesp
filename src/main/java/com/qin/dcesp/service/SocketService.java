@@ -85,7 +85,7 @@ public class SocketService implements CommunityConstant {
             //设置socket端口
             serverSocket = new ServerSocket(SERVICE_PORT);
             //创建线程池
-            executorService = Executors.newFixedThreadPool(50);
+            executorService = Executors.newFixedThreadPool(10);
             for(int i = 0;i < 10;i++){
                 //10条线程
                 Runnable mainRun = () -> {

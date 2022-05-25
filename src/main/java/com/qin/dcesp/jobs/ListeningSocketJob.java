@@ -30,6 +30,9 @@ public class ListeningSocketJob implements Job, CommunityConstant {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //监听启动的线程池.观察其中的任务是否保持在一定数量,如果少于这个数量,就向里面加任务
         ExecutorService runningThreadPool = socketService.getExecutorService();
+        while(runningThreadPool == null){
+            runningThreadPool = socketService.getExecutorService();
+        }
         int runningTaskCount = ((ThreadPoolExecutor) runningThreadPool).getActiveCount();
         int corePoolSize = ((ThreadPoolExecutor) runningThreadPool).getCorePoolSize();
         ServerSocket serverSocket = socketService.getServerSocket();
@@ -46,6 +49,7 @@ public class ListeningSocketJob implements Job, CommunityConstant {
                         //等待连接
                         logger.info("获取连接成功!");
                         Socket socket = accept;
+                        //socket.setSoTimeout(30000);
                         String socketName = socket.getInetAddress() + ":" + socket.getPort();
                         socketMap.put(socketName,socket);//存储当前连接的连接对象.
                         //进行Esp8266Service的封装

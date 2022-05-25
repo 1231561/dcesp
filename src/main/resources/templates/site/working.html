@@ -18,7 +18,7 @@
         <div class="col-md-4">
             <ul class="list-inline">
                 <li class="list-inline-item">
-                    <a href="#">
+                    <a th:href="@{/index}">
                         首页
                     </a>
                 </li>
@@ -118,6 +118,20 @@
             </div>
         </div>
         <div class="row">
+            <div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" data-backdrop="'static" style="visibility: hidden">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4>
+                                Loading...
+                            </h4>
+                        </div>
+                        <div class="modal-body">
+                            Please wating...
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-2">
                 <input type="button" value="获取连接数据" id="databtn">
                 <input type="button" value="提交数据" id="submitData">

@@ -884,7 +884,7 @@ for(let i = 0;i < lis.length;i++){
 
 
         //生成数据显示格子:
-        if(nodeName.includes('电平检测')){
+        if(nodeName.indexOf('电平检测') !== -1){
             var dpCheckId = 'dpCheck,' + nodeName.split(',')[1];
             alert("加入检测框");
             //在下方生成数据显示位
@@ -901,7 +901,7 @@ for(let i = 0;i < lis.length;i++){
                 '</li>'
             );
         }
-        if(nodeName.includes('示波器')){
+        if(nodeName.indexOf('示波器') !== -1){
             alert('添加示波器');
             var waveFormId = 'wfCheck,' + nodeName.split(',')[1];
             $('#waveformList').append(
@@ -927,28 +927,30 @@ diagram.addDiagramListener("SelectionDeleted",function (e){
         // console.log(n.nb.key);
         //n包含删除节点的信息,其nb.key属性为删除节点的key属性.
         var deleteNodeKey = n.nb.key;
-        if(deleteNodeKey.includes("电平检测")){
-            var dpCheckId = 'dpCheck,' + deleteNodeKey.split(',')[1];
-            $('#datashowList').children().each(function(u,i){
-                //i为标签元素
-                if(i.id == dpCheckId){
-                    $('#'+dpCheckId).remove();
+        if(deleteNodeKey.indexOf("电平检测") !== -1){
+            let dpCheckId = 'dpCheck,' + deleteNodeKey.split(',')[1];
+            let childrens = $('#datashowList')[0].children;
+            for(let i = 0;i < childrens.length; i++) {
+                if (childrens[i].id == dpCheckId) {
+                    childrens[i].remove();
                 }
-            });
+            }
         }
-        if(deleteNodeKey.includes("示波器")){
-            var waveFormId = 'wfCheck,' + deleteNodeKey.split(',')[1];
-            $('#waveformList').children().each(function(u,i){
-                if(i.id == waveFormId){
-                    $('#' + waveFormId).remove();
+        if(deleteNodeKey.indexOf("示波器") !== -1){
+            let waveFormId = 'wfCheck,' + deleteNodeKey.split(',')[1];
+            let childrens = $('#waveformList')[0].children;
+            for(let i = 0;i < childrens.length; i++) {
+                if (childrens[i].id == waveFormId) {
+                     childrens[i].remove();
                 }
-            });
+            }
         }
     });
 });
 
 var btn = document.getElementById("databtn");
 btn.onclick = function(){
+    document.getElementById('loadingModal').style.visibility = 'visible';
     var graphData = diagram.model.linkDataArray;
     var graphNodes = diagram.model.nodeDataArray;
     var nodes = [];
@@ -966,12 +968,21 @@ btn.onclick = function(){
             url: 'http://localhost:8080/dcesp/working/sumitCircuitdiagram',
             data: {'dlt' : JSON.stringify(graphData),'nodes' : JSON.stringify(graphNodes)},
             success: function(data){
-                alert(data);
+                console.log("data:=====================");
+                console.log(data);
                 //等待数据
                 var resultData = JSON.parse(data);
+
+                console.log("resultData:=====================");
+                console.log(resultData);
+
                 if(resultData.adcData){
                     var adcArray = resultData.adcData;
                     var sbqName = resultData.sbqName;
+
+                    console.log('sbqName:==============');
+                    console.log(sbqName);
+
                     //处理adc数据,显示为波形
                     waveData = [];
                     for(let i = 0;i < 300;i++){
@@ -979,41 +990,73 @@ btn.onclick = function(){
                         waveData.push(pointData);
                     }
 
+                    console.log('waveData:======================');
                     console.log(waveData);
 
                     var waveList = document.getElementById('waveformList').getElementsByTagName('li');
-                    waveList.map((index,wave)=>{
-                        if(wave.id.split(',')[1] == sbqName.split(',')[1]){
+                    for(let i = 0;i < waveList.length; i++){
+                        if(waveList[i].id.split(',')[1] == sbqName.split(',')[1]){
                             waveOptions.series[0].data = waveData;
-                            echarts.init(document.getElementById(wave.id)
+                            echarts.init(document.getElementById(waveList[i].id)
                                 .getElementsByTagName('div')[0])
                                 .setOption(waveOptions);
                         }
-                    });
+                    }
                 }
+
                 if(resultData.gpiocData){
-                    var gpiocData = "0x" + resultData.gpiocData;
-                    var gpiocNum = (parseInt(gpiocData)).toString(2);
+                    var reg = /[a-zA-Z]+/;
+                    var gpiocDataArr = resultData.gpiocData;
                     var checkPoint = resultData.nodeToCheck;
+                    var checkPointStatusArr = [];
+                    let cNum = 0;
                     var checkLis = document.getElementById('datashowList').getElementsByTagName('li');
-                    //处理检测端数据,控制检测位显示
-                    checkLis.map((index,li)=>{
-                        checkPoint.map((index,point)=>{
-                            let nowPoint = 0;
-                            for(let i = 0;i < point.length; i++){
-                                if('0' <= point[i] <= '9'){
-                                    nowPoint += (point[i] - '0');
-                                }
+                    let allBitCountArr =[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]];
+                    let finalBitArr = [0,0,0,0,0,0,0,0];
+                    for(let k = 0;k < checkPoint.length; k++){
+                        let tempCheckPoint = checkPoint[k];
+                        let result;
+                        while(result = tempCheckPoint.match(reg)){
+                            tempCheckPoint = tempCheckPoint.replace(result[0],'');
+                        }
+                        cNum |= (1 << parseInt(tempCheckPoint));
+
+                    }
+                    for(let l = 0;l < 100;l++){
+                        checkPointStatusArr.push(gpiocDataArr[l] & cNum);
+                    }
+                    for(let l = 0;l < 100;l++){
+                        for(let k = 0;k < checkPoint.length; k++){
+                            let tempCheckPoint = checkPoint[k];
+                            let result;
+                            while(result = tempCheckPoint.match(reg)){
+                                tempCheckPoint = tempCheckPoint.replace(result[0],'');
                             }
-                            if(parseInt(li.id.split(',')[1]) === nowPoint){
-                                li.getElementsByTagName('div')[2].style.color = 'red';
+                            let bit = checkPointStatusArr[l] & (1 << parseInt(tempCheckPoint));
+                            if(bit !== 0){
+                                allBitCountArr[parseInt(tempCheckPoint)][1]++;//1的数量
+                            }else{
+                                allBitCountArr[parseInt(tempCheckPoint)][0]++;//0的数量
                             }
-                        });
-                    });
+                        }
+                    }
+                    for(let l = 0;l < allBitCountArr.length;l++){
+                        finalBitArr[l] = allBitCountArr[l][0] >= allBitCountArr[l][1] ? 0 : 1;//确定最终的比特位
+                    }
+                    //显示
+                    //需要根据与检测端口连接的位置判断.
+                    for(let k = 0;k < checkLis.length; k++){
+                        if(finalBitArr[parseInt(checkLis[k].id.split(',')[1]) - 1] == 1){
+                            checkLis[k].getElementsByTagName('div')[1].style.color = 'red';
+                        }else{
+                            checkLis[k].getElementsByTagName('div')[1].style.color = '';
+                        }
+                    }
                 }
             }
         }
-    )
+    );
+    document.getElementById('loadingModal').style.visibility = 'hidden';
 }
 
 

@@ -24,6 +24,12 @@
       "to": "74LS02",
       "formPort": "power_port3",
       "toPort": "74LS02_port14"
+    },
+    {
+      "form": "power",
+      "to": "74LS138",
+      "formPort": "power_port4",
+      "toPort": "74LS138_port16"
     }
   ],
   "checkLinked":
@@ -130,6 +136,56 @@
           "to": "check",
           "formPort": "74LS02_port10",
           "toPort":"check_port3"
+        }
+      ],
+      "74LS138CheckLinked": [
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port15",
+          "toPort":"check_port0"
+        },
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port14",
+          "toPort":"check_port1"
+        },
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port13",
+          "toPort":"check_port2"
+        },
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port12",
+          "toPort":"check_port3"
+        },
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port11",
+          "toPort":"check_port4"
+        },
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port10",
+          "toPort":"check_port5"
+        },
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port9",
+          "toPort":"check_port6"
+        },
+        {
+          "form":"74LS138",
+          "to": "check",
+          "formPort": "74LS138_port7",
+          "toPort":"check_port7"
         }
       ]
     },
@@ -321,6 +377,26 @@
           "to": "74LS02",
           "formPort": "control_port7",
           "toPort": "74LS02_port9"
+        }
+      ],
+      "74LS138ControlLinked": [
+        {
+          "form": "control",
+          "to": "74LS138",
+          "formPort": "control_port0",
+          "toPort": "74LS138_port1"
+        },
+        {
+          "form": "control",
+          "to": "74LS138",
+          "formPort": "control_port1",
+          "toPort": "74LS138_port2"
+        },
+        {
+          "form": "control",
+          "to": "74LS138",
+          "formPort": "control_port2",
+          "toPort": "74LS138_port3"
         }
       ]
     }

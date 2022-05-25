@@ -31,8 +31,9 @@ public class SocketConnectionCheckJob implements Job {
         Map<String, Esp8266Service> esp8266ServiceMap = socketService.getEsp8266ServiceMap();
         List<String> disableSocketList = new ArrayList<>();
         for(String socketName : socketMap.keySet()){
-            Socket socket = socketMap.get(socketName);
-            if(socket.isClosed()){
+            Esp8266Service esp8266Service = esp8266ServiceMap.get(socketName);
+            Socket socket = esp8266Service.getSocket();
+            if(socket.isClosed() || !socket.isConnected()){
                 //如果当前socket寄了
                 logger.info("连接: " + socket + " 寄了,它将会被剔除");
                 disableSocketList.add(socketName);
