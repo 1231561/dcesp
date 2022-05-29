@@ -20,12 +20,7 @@ public class TimeoutCountStutJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException{
-        if(workingController.timeoutCountStart.get()){
-            workingController.timeoutCount.set(workingController.timeoutCount.get() - 1);
-            if(workingController.timeoutCount.get() < 0){
-                throw new JobExecutionException("超时!");
-            }
-        }
+
         logger.info("Time out Count job is Running");
     }
 }

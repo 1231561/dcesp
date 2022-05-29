@@ -39,12 +39,12 @@ public class Graph {
         return getRoadFromPowerToGround(allNodes);
     }
 
+    //寻找所有从电源到接地端的路径
+    //首先根据给定信息构建邻接表
+    //给定信息GraphData格式:from,to,fromport,toport
+    //综合路径信息:from+fromport.to+toport
     private Map<String,List<List<String>>> getRoadFromPowerToGround(List<GraphData> allNodes) {
-        //寻找所有从电源到接地端的路径
-        //首先根据给定信息构建邻接表
-        //给定信息GraphData格式:from,to,fromport,toport
-        //综合路径信息:from+fromport.to+toport
-        //邻接表:
+        //构建邻接表:
         Map<String, List<String>> adjacencyTable = new HashMap<>();
         for (GraphData node : allNodes) {
             if (!adjacencyTable.containsKey(node.getFrom())) {
@@ -96,6 +96,16 @@ public class Graph {
     private List<List<String>> highPowerTo = new ArrayList<>();
     private List<List<String>> lowerPowerTo = new ArrayList<>();
 
+
+    /**
+     * 方法功能 : 深度优先遍历,遍历给定nowNode到end节点的所有路径并去重
+     * @param adjTable : 邻接表
+     * @param nowNode : 当前节点
+     * @param end : 结束节点
+     * @param visited : 已经访问过的节点
+     * @param nowRoad : 当前路径
+     * @param res : 结果
+     * */
     private void dfs(Map<String,List<String>> adjTable,String nowNode,
                      String end,Set<String> visited,
                      List<String> nowRoad,List<List<String>> res){

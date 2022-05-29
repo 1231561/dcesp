@@ -8,9 +8,31 @@
     <script type="text/javascript" th:src="@{/js/go-debug.js}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/skins/default.js" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/wavedrom.min.js" type="text/javascript"></script>
+    <style>
+        #loadDiv {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            background-color: rgba(235, 235, 235, 0.95);
+            top: 0px;
+        }
+        #gif {
+            margin: auto;
+            margin-top: 30%;
+            border: 1px solid #f5f5f5;
+            background-color: white;
+            width: 86px;
+            border-radius: 10px;
+        }
+        #gifText{
+            padding-top: 20px;width:100%;color: #5c5c63;text-align:  center;
+        }
+    </style>
     <title>实验室</title>
 </head>
-<body onload="WaveDrom.ProcessAll()">
+<body>
 <div class="container">
     <div id="header" class="row">
         <div class="col-md-2">
@@ -118,18 +140,12 @@
             </div>
         </div>
         <div class="row">
-            <div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" data-backdrop="'static" style="visibility: hidden">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4>
-                                Loading...
-                            </h4>
-                        </div>
-                        <div class="modal-body">
-                            Please wating...
-                        </div>
-                    </div>
+            <div id="loadDiv">
+                <div id="gif">
+                    <img style="padding: 10px" th:src="@{/img/loading.gif}" _height="64" _width="64">
+                </div>
+                <div id="gifText" >
+                    <div id="loadText">正在验证数据，请稍后！</div>
                 </div>
             </div>
             <div class="col-md-2">

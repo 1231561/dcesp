@@ -15,7 +15,6 @@ import com.qin.dcesp.service.SocketService;
 import com.qin.dcesp.utils.CommunityConstant;
 import com.qin.dcesp.utils.GraphDataStringPorcessUtil;
 import com.qin.dcesp.utils.HostHolder;
-import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +28,6 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Controller
@@ -48,8 +45,6 @@ public class WorkingController implements CommunityConstant {
     @Autowired
     SocketService socketService;
 
-    volatile public AtomicInteger timeoutCount = new AtomicInteger(10);
-    volatile public AtomicBoolean timeoutCountStart = new AtomicBoolean(false);
 
     /**
      * 电路请求处理
@@ -412,9 +407,7 @@ public class WorkingController implements CommunityConstant {
                 client = map.get(key);
                 //数据发送前,确保客户端在线,发送一个HB心跳包,只要不出异常,就能往下走
                 try{
-                    //socket.sendUrgentData("HB".getBytes());//发送校验位,如果连接实际上是断开的话会导致异常
                     //DataInputStream in = new DataInputStream(socket.getInputStream());
-
                     Socket socket = client.getSocket();
                     DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                     out.write("HB".getBytes());//发送检测数据,如果出现异常则说明有问题
@@ -433,7 +426,7 @@ public class WorkingController implements CommunityConstant {
             logger.info("删除1条连接");
         }
         try {
-            Thread.sleep(5000);
+            Thread.sleep(3000);
             Thread.sleep(1000);
             Thread.sleep(1000);
             logger.info("延时完成");
@@ -449,8 +442,10 @@ public class WorkingController implements CommunityConstant {
             return JSON.toJSONString(resultMap);
         }else{
             for(String key : map.keySet()){
-                client = map.get(key);
-                break;
+                if(ESP8266WAITTING.equals(map.get(key).getStatus())){
+                    client = map.get(key);
+                    break;
+                }
             }
         }
         Set<String> set = new HashSet<>();
@@ -479,20 +474,14 @@ public class WorkingController implements CommunityConstant {
                     logger.info("发送数据完成,发送数据为: " + sendData);
                     Callable<AtomicReference<String>> task = ()->{
                         while(true) {
-                            logger.info("等待接收数据");
-
                             /*阻塞区域---------------------------*/
-                            //保持连接,进行数据收发
                             int available = 0;
                             while (available == 0) {
                                 available = in.available();
                             }
-                            timeoutCount.set(10);
-                            logger.info("数据长度: " + available);
                             byte[] buffer = new byte[available];
                             in.read(buffer);//阻塞
                             /*阻塞区域---------------------------*/
-
                             getMessage.set(new StringBuffer());
                             for (int i = 0; i < buffer.length; i++) {
                                 if (i != buffer.length - 1) {

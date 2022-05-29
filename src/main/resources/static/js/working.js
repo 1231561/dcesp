@@ -948,9 +948,23 @@ diagram.addDiagramListener("SelectionDeleted",function (e){
     });
 });
 
+function LoadDivs(flg) {
+    var s = null;
+    document.getElementById("loadDiv").style.display = flg == true ? "block" : "none";
+    if (flg) {
+        s = setInterval(function () {
+            document.getElementById("loadText").innerText = "正在加载数据，请稍后！";
+        }, 2000);
+    } else {
+        if (s != null && s != undefined) {
+            clearInterval(s);
+        }
+    }
+}
+
 var btn = document.getElementById("databtn");
 btn.onclick = function(){
-    document.getElementById('loadingModal').style.visibility = 'visible';
+    LoadDivs(true);
     var graphData = diagram.model.linkDataArray;
     var graphNodes = diagram.model.nodeDataArray;
     var nodes = [];
@@ -1056,7 +1070,7 @@ btn.onclick = function(){
             }
         }
     );
-    document.getElementById('loadingModal').style.visibility = 'hidden';
+    LoadDivs(false);
 }
 
 
